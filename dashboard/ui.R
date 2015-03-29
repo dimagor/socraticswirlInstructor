@@ -9,9 +9,9 @@ sidebar <- dashboardSidebar(
   uiOutput("usersessions"),
   hr(),
   sidebarMenu(
-    menuItem("Exercise Dashboard", tabName = "exercise", icon = icon("dashboard")),
-    menuItem("Lesson Overview", tabName = "overview", icon = icon("list")),
-    menuItem("Submitted Questions", tabName = "studentquestions", icon = icon("question-circle"))
+    menuItem("Exercise Dashboard", tabName = "exercise_tab", icon = icon("dashboard")),
+    menuItem("Lesson Overview", tabName = "overview_tab", icon = icon("list")),
+    menuItem("Submitted Questions", tabName = "questions_tab", icon = icon("question-circle"))
   ),
   p(), #Fix for better separation
   hr(),
@@ -33,7 +33,7 @@ sidebar <- dashboardSidebar(
 
 body <- dashboardBody(
   tabItems(
-    tabItem(tabName = "exercise",
+    tabItem(tabName = "exercise_tab",
             fluidRow(
 
               # Left Column
@@ -68,11 +68,12 @@ body <- dashboardBody(
             )
     ),
 
-    tabItem(tabName = "overview",
+    tabItem(tabName = "overview_tab",
             h2("Dashboard tab content")
     ),
-    tabItem(tabName = "studentquestion",
-            h2("Dashboard tab content")
+    tabItem(tabName = "questions_tab",
+            box(width = NULL,
+                dataTableOutput("questionsasked"))
     )
   )
   #QA Tab: List questions and add button to mark resolved

@@ -14,6 +14,11 @@ source("~/.Rprofile")
 # swirl:::Parse_create("lecdb_dima",course="default",lesson="ggplot", instructor="dima", exercise=3, description="Plot diamonds: carat vs price", desired_answer="ggplot(diamonds,aes(carat,price))+geom_point()")
 # swirl:::Parse_create("lecdb_dima",course="default",lesson="ggplot", instructor="dima", exercise=4, description="Plot diamonds: carat vs price with color breakdown", desired_answer="ggplot(diamonds,aes(carat,price,color=color))+geom_point()")
 
+# QuestionDB
+questions <- c("Whats your (full) name?", "How old are you?", "Whats your Birthday?", "What starsign does that make it?", "Whats your favourite colour?", "Whats your lucky number?", "Do you have any pets?", "Where are you from?", "How tall are you?", "What shoe size are you?", "How many pairs of shoes do you own?")
+
+for(i in questions) swirl:::Parse_create("questdb_dima",course="default",lesson="ggplot", instructor="dima", student = digest(sample(1:10,1)), addressed = FALSE, question = i)
+
 
 #
 # # Participant DB

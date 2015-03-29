@@ -45,6 +45,14 @@ shinyServer(function(input, output, session) {
       gather(type,num,-t_cut) %>% mutate(pct = num/usersLogged() * 100)
   })
 
+  studentQuestions <- reactive({
+    input$refresh
+    interval <- max(as.numeric(input$interval), 5)
+    if(input$interval != FALSE) invalidateLater(interval * 1000, session)
+    Parse_retrieve("questdb_dima") %>% group_by()
+  })
+
+
   # Header --------
 
   output$progressMenu <- renderMenu({
@@ -138,7 +146,10 @@ shinyServer(function(input, output, session) {
                theme(legend.justification=c(1,0), legend.position=c(1,0))
       )
     }
-
   })
+
+  output$questionsasked <- renderDataTable(
+    studentQuestions() %>% arrange(desc(updatedAt)) %>% select(question, updatedAt, student)
+  )
 
 })
