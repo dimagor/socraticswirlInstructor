@@ -92,7 +92,7 @@ shinyServer(function(input, output, session) {
   # BODY ------------
   output$selectExercise <- renderUI({
     exercises = as.list(lectureInfo$exercise)
-    selectInput("exerciseID", "Select Exercise:", exercises, selected = "1")
+    selectInput("exerciseID", label = NULL, exercises, selected = "1")
   })
   output$attemptedBar <- renderUI({
     attempted = selectedExercise() %>% distinct(student) %>% nrow
@@ -145,6 +145,25 @@ shinyServer(function(input, output, session) {
                theme_classic() +
                theme(legend.justification=c(1,0), legend.position=c(1,0))
       )
+    }
+  })
+
+  output$overviewGraph <- renderPlot({
+    all_exercise_data <- questionsAnswered()
+    if(nrow(all_exercise_data) == 0 ) NULL
+    else{
+      all_exercise_data %>% mutate(exercise=paste0("Exercise #",exercise)) %>%
+      count(exercise,student) %>%
+      select(-student) %>%
+      mutate(n=as.character(n)) %>%
+      count(exercise,attempts=n) %>%
+      ggplot(aes(x = as.numeric(attempts), y = n, fill = as.numeric(attempts))) +
+      geom_bar(stat = "identity", position = "dodge") + facet_wrap(~ exercise) +
+      theme_bw() +
+      scale_x_discrete() +
+      scale_y_discrete() +
+      xlab("Attempts") + ylab("Frequency") +
+      guides(fill = FALSE)
     }
   })
 

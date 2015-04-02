@@ -5,7 +5,6 @@ header <- dashboardHeader(title = "SocraticSwirl",
                           dropdownMenuOutput("progressMenu"))
 
 sidebar <- dashboardSidebar(
-  # box(width = NULL, style = "color: black;",
   uiOutput("usersessions"),
   hr(),
   sidebarMenu(
@@ -35,19 +34,15 @@ body <- dashboardBody(
   tabItems(
     tabItem(tabName = "exercise_tab",
             fluidRow(
-
               # Left Column
-              column(width = 7,
-                     # Exercise Selector
-                     box(width = NULL, uiOutput("selectExercise")),
-
-                     # Question Info
-                     box(collapsible = TRUE, width = NULL, title = "Question:",
-                         verbatimTextOutput("exerciseQuestion"),
-                         verbatimTextOutput("exerciseAnswer")),
-
+              column(width = 6,
+                     # Exercise Selector & Progress
+                     box(collapsible = FALSE, width = NULL, title = "Select Exercise",
+                         uiOutput("selectExercise"),
+                         uiOutput("attemptedBar", style = "list-style-type: none;"),
+                         uiOutput("completedBar", style = "list-style-type: none;")),
                      # Plots
-                     box(collapsible = TRUE, width = NULL, title = "Student Attempts",
+                     box(collapsible = FALSE, width = NULL, title = "Student Attempts",
                          selectInput("exerciseGraphSelect", label = NULL,
                                      choices = c("Attempt Frequency" = "attemptbar",
                                                  "Progress Tracking" = "timetracking")),
@@ -55,21 +50,23 @@ body <- dashboardBody(
               ),
 
               # Right Column
-              column(width = 5,
-                     # Progres Bars
-                     box(width = NULL, uiOutput("attemptedBar", style = "list-style-type: none;"),
-                         uiOutput("completedBar", style = "list-style-type: none;")),
+              column(width = 6,
+                     # Question Info
+                     box(collapsible = FALSE, width = NULL, title = "Question Info",
+                         verbatimTextOutput("exerciseQuestion"),
+                         verbatimTextOutput("exerciseAnswer")),
 
                      # TODO: Capture Filter/Sort and use as input for tableoutput to preserve post refresh
                      # Answer Table
-                     box(width = NULL,
+                     box(collapsible = FALSE, width = NULL, title = "Incorrect Answers",
                          dataTableOutput("incorrectAnswers"))
               )
             )
     ),
 
     tabItem(tabName = "overview_tab",
-            h2("Dashboard tab content")
+            box(collapsible = TRUE, width = NULL,
+                plotOutput("overviewGraph"))
     ),
     tabItem(tabName = "questions_tab",
             box(width = NULL,
