@@ -1,36 +1,32 @@
 library(digest)
 source("~/.Rprofile")
 
+# # Student Session ---------------
+# #
+# # Fields: course, lesson, instructor, student
 #
-# # AnswerDB
-# #
-# # adb_dima
-# #
-# # Fields: course, lesson, instructor, student, exercise, correct, answer
+for(i in seq(25)) swirl:::Parse_create("StudentSession",
+                                       course="default",
+                                       lesson="ggplot",
+                                       instructor="dima",
+                                       student=digest(i))
+for(i in seq(25)) swirl:::Parse_create("StudentSession",
+                                       course="default",
+                                       lesson="vectors",
+                                       instructor="dima",
+                                       student=digest(i))
+for(i in seq(25)) swirl:::Parse_create("StudentSession",
+                                       course="default",
+                                       lesson="ggplot",
+                                       instructor="dgrtwo",
+                                       student=digest(i))
 
-# # Lecture DB --------------
-# swirl:::Parse_create("lecdb_dima",course="default",lesson="ggplot", instructor="dima", exercise=1, description="Load ggplot library", desired_answer="library(ggplot2)")
-# swirl:::Parse_create("lecdb_dima",course="default",lesson="ggplot", instructor="dima", exercise=2, description="Count the diamonds db by color", desired_answer="count(diamonds,color)")
-# swirl:::Parse_create("lecdb_dima",course="default",lesson="ggplot", instructor="dima", exercise=3, description="Plot diamonds: carat vs price", desired_answer="ggplot(diamonds,aes(carat,price))+geom_point()")
-# swirl:::Parse_create("lecdb_dima",course="default",lesson="ggplot", instructor="dima", exercise=4, description="Plot diamonds: carat vs price with color breakdown", desired_answer="ggplot(diamonds,aes(carat,price,color=color))+geom_point()")
-
-# QuestionDB
-questions <- c("Whats your (full) name?", "How old are you?", "Whats your Birthday?", "What starsign does that make it?", "Whats your favourite colour?", "Whats your lucky number?", "Do you have any pets?", "Where are you from?", "How tall are you?", "What shoe size are you?", "How many pairs of shoes do you own?")
-
-for(i in questions) swirl:::Parse_create("questdb_dima",course="default",lesson="ggplot", instructor="dima", student = digest(sample(1:10,1)), addressed = FALSE, question = i)
 
 
-#
-# # Participant DB
-# #
-# # swirl:::Parse_create()
-# #
-# # udb_dima
-# #
-# # Fields: course, lesson, instructor
-#
 
-# for(i in seq(25)) swirl:::Parse_create("udb_dima",course="default",lesson="ggplot", instructor="dima", student=digest(i))
+
+# Student Response ----------------------
+# # Fields: course, lesson, instructor, student, command, exercise, isCorrect, isError, errorMsg
 
 
 simulateStudents <- function(answerpool,  #Assume first is correct
@@ -41,19 +37,24 @@ simulateStudents <- function(answerpool,  #Assume first is correct
                              totalstudents = 25,
                              sampledstudents = 15,
                              attemptbuffer = 2,
-                             maxsleep = 20){
+                             maxsleep = 20,
+                             commonErrors = c("Variable not found", "Package not installed", "Data not loaded")){
   for(s in sample(seq(totalstudents), sampledstudents)) {
     for(a in seq(sample(length(answerpool) + attemptbuffer, 1))){ #attempts
-      answer = sample(answerpool, 1)
-      isCorrect = answer == answerpool[1]
-      swirl:::Parse_create("adb_dima",
+      command = sample(answerpool, 1)
+      isCorrect = command == answerpool[1]
+      isError = ifelse(command != answerpool[1],sample(c(TRUE,FALSE),1),FALSE)
+      errorMsg = if (isError) sample(commonErrors,1) else NULL
+      swirl:::Parse_create("StudentResponse",
                            course = course,
                            lesson = lesson,
                            instructor = instructor,
                            student = digest(s),
                            exercise = exercise,
-                           correct = isCorrect,
-                           answer  = answer)
+                           isCorrect = isCorrect,
+                           command = command,
+                           isError =  isError,
+                           errorMsg = errorMsg)
       if(isCorrect) break
       pause = sample(seq(1,maxsleep),1)
       print(paste("Waiting ", as.character(pause)))
@@ -66,6 +67,7 @@ simulateStudents <- function(answerpool,  #Assume first is correct
 q1_ans <- c("library(ggplot2)", "library(ggplot2)", #To improve chances
             "libary(ggplot2)","library(ggplot)","library ggplot", "library gplot", "lib(ggplot2)")
 simulateStudents(answerpool = q1_ans, exercise = 1, maxsleep = 10)
+simulateStudents(answerpool = q1_ans, exercise = 1, maxsleep = 10,instructor = "dgrtwo", sampledstudents = 8)
 
 q2_ans <- c("count(diamonds,color)", "count(diamonds,color)",
             "counts(diamonds, color)",
@@ -78,4 +80,18 @@ q2_ans <- c("count(diamonds,color)", "count(diamonds,color)",
             "Up, Up, Down, Down, Left, Right, Left, Right, B, A, Start"
             )
 
-simulateStudents(answerpool = q2_ans, exercise = 2, maxsleep = 12)
+simulateStudents(answerpool = q2_ans, exercise = 2, maxsleep = 12, sampledstudents = 7)
+
+
+
+
+# Lecture DB --------------
+swirl:::Parse_create("Exercise",course="default",lesson="ggplot", instructor="dima", exercise=1, prompt="Load ggplot library", answer="library(ggplot2)")
+swirl:::Parse_create("Exercise",course="default",lesson="ggplot", instructor="dima", exercise=2, prompt="Count the diamonds db by color", answer="count(diamonds,color)")
+swirl:::Parse_create("Exercise",course="default",lesson="ggplot", instructor="dima", exercise=3, prompt="Plot diamonds: carat vs price", answer="ggplot(diamonds,aes(carat,price))+geom_point()")
+swirl:::Parse_create("Exercise",course="default",lesson="ggplot", instructor="dima", exercise=4, prompt="Plot diamonds: carat vs price with color breakdown", answer="ggplot(diamonds,aes(carat,price,color=color))+geom_point()")
+
+# QuestionDB
+questions <- c("Whats your (full) name?", "How old are you?", "Whats your Birthday?", "What starsign does that make it?", "Whats your favourite colour?", "Whats your lucky number?", "Do you have any pets?", "Where are you from?", "How tall are you?", "What shoe size are you?", "How many pairs of shoes do you own?")
+
+for(i in questions) swirl:::Parse_create("StudentQuestion",course="default",lesson="ggplot", instructor="dima", student = digest(sample(1:10,1)), addressed = FALSE, question = i)
