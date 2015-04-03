@@ -28,10 +28,13 @@ Parse_GET <- function(path, ...) {
 
 
 #' Perform a POST request to parse
-Parse_POST <- function(path, body, ...) {
+Parse_POST <- function(path, body, to_json = TRUE, ...) {
+  if (to_json) {
+    body <- rjson::toJSON(body)
+  }
   req <- httr::POST(base_URL, path = paste0("1/", path),
-                    body = rjson::toJSON(body),
-                    encode = "json", Parse_headers(), ...)
+                    body = body, encode = "json",
+                    Parse_headers(), ...)
 
   process_Parse(req)
 }
@@ -62,7 +65,8 @@ process_Parse <- function(req) {
 
 Parse_create <- function(class_name, ...) {
   body <- list(...)
-  Parse_POST(paste0("classes/", class_name), body)
+  ret <- Parse_POST(paste0("classes/", class_name), body)
+  as_Parse_class(ret, class_name)
 }
 
 #' retrieve one or more objects from Parse
@@ -82,17 +86,24 @@ Parse_retrieve <- function(class_name, object_id, ...) {
   } else {
     q <- NULL
   }
-  Parse_GET(url, query = q)
+  ret <- Parse_GET(url, query = q)
+  as_Parse_class(ret, class_name)
+}
+
+as_Parse_class <- function(x, class_name) {
+  attr(x, "class_name") <- class_name
+  x
 }
 
 
 #' create a new user
 #'
-#' @return a list comprising the user's session
+#' @return a Parse user object
 #'
 #' @export
 Parse_signup <- function(username, password, ...) {
   ret <- Parse_POST("users/", list(username = username, password = password, ...))
+  ret <- as_Parse_class(ret, "_User")
   options(parse_user = ret)
   invisible(ret)
 }
@@ -111,13 +122,14 @@ Parse_signup <- function(username, password, ...) {
 #' @export
 Parse_login <- function(username, password, ...) {
   ret <- Parse_GET("login/", query = list(username = username, password = password))
+  ret <- as_Parse_class(ret, "_User")
   options(parse_user = ret)
   invisible(ret)
 }
 
 
 Parse_current_user <- function() {
-  Parse_GET("users/me")
+  as_Parse_class(Parse_GET("users/me"), "_User")
 }
 
 
@@ -128,4 +140,36 @@ Parse_current_user <- function() {
 #' @export
 Parse_password_reset <- function(email) {
   Parse_POST("requestPasswordReset", email = email)
+}
+
+
+#' Upload a file to Parse
+#'
+#' @param name name to save the file to
+#' @param path path to file to upload
+#' @param type type of file (e.g.)
+#'
+#' @return a file object, containing a name and URL
+Parse_upload_file <- function(name, path, type = NULL) {
+  upfile <- httr::upload_file(path, type = type)
+  ret <- Parse_POST(file.path("files", name), body = upfile, to_json = FALSE)
+  class(ret) <- c("file", class(ret))
+  ret
+}
+
+
+#' convert a Parse object to a pointer
+convert_pointer <- function(x, ...) {
+  UseMethod("convert_pointer")
+}
+
+convert_pointer.default <- function(x, ...) {
+  list("__type" = "Pointer",
+       "className" = attr(x, "class_name"),
+       "objectId" = x$objectId)
+}
+
+convert_pointer.file <- function(x, ...) {
+  list("__type" = "File",
+       "name" = x$name)
 }

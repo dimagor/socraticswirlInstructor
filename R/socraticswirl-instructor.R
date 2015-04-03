@@ -28,6 +28,58 @@ socratic_swirl_instructor <- function(username, password) {
 }
 
 
+#' Upload a Swirl course to the SocraticSwirl server
+#'
+#' @param directory path to directory of course to upload
+#'
+#' @export
+upload_course <- function(directory) {
+  u <- getOption("parse_user")
+  if (is.null("parse_user")) {
+    stop("Not signed in; cannot upload")
+  }
+
+  course_title <- gsub("_", " ", basename(directory))
+
+  # zip the file
+  outzip <- ".forupload.zip"
+  zip(outzip, directory)
+
+  # upload the file
+  f <- Parse_upload_file(paste0(basename(directory), ".zip"), outzip)
+
+  # ret <- Parse_create("Course", title = course_title,
+  #              owner = convert_pointer(u),
+  #              zipfile = convert_pointer(f))
+  # delete temporary zip file
+  unlink(outzip)
+
+  ## add Exercise objects
+  for (lesson_dir in list.files(directory, full.names = TRUE, include.dirs = TRUE)) {
+   yaml_file <- file.path(lesson_dir, "lesson.yaml")
+   y <- yaml::yaml.load_file(yaml_file)
+
+   lesson_name <- gsub("_", " ", basename(lesson_dir))
+
+   for (i in 1:length(y)) {
+     if (i > 1) {
+       e <- y[[i]]
+       Parse_create("Exercise",
+                    course = course_title,
+                    lesson = lesson_name,
+                    exercise = i - 1,  # starts with metadata
+                    prompt = e$Output,
+                    answer = as.character(e$CorrectAnswer),
+                    hint = e$Hint)
+     }
+   }
+  }
+  ret <- NULL
+
+  invisible(ret)
+}
+
+
 #' Open the SocraticSwirl dashboard
 #'
 #' Opens the SocraticSwirl instructor dashboard in a browser.
