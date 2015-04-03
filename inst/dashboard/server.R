@@ -4,13 +4,14 @@ library(ggplot2)
 library(swirl)
 
 shinyServer(function(input, output, session) {
+  instructor <- getOption("socratic_swirl_instructor")
 
   # Static Definitions ----------
   getPctColor <- function(pct){
     typeColors = c("black","red","orange","yellow","light-blue","navy","teal","aqua","lime","olive","green")
     typeColors[round(as.numeric(pct) / 10) + 1]
   }
-  lectureInfo <- Parse_retrieve("lecdb_dima")
+  lectureInfo <- Parse_retrieve("lecdb_dima", instructor = instructor)
 
   # Reactive Functions ---------------
   usersLogged <- reactive({
