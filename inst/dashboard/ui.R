@@ -48,7 +48,8 @@ body <- dashboardBody(
                          selectInput("exerciseGraphSelect", label = NULL,
                                      choices = c("Attempt Frequency" = "attemptbar",
                                                  "Progress Tracking" = "timetracking")),
-                         plotOutput("exerciseGraph"))
+                         plotOutput("exerciseGraph")
+                         )
               ),
 
               # Right Column

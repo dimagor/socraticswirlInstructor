@@ -1,7 +1,6 @@
 library(shiny)
 library(dplyr)
 library(ggplot2)
-library(swirl)
 
 shinyServer(function(input, output, session) {
   current_course <- NULL
@@ -41,14 +40,19 @@ shinyServer(function(input, output, session) {
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
     users_logged <- Parse_retrieve("StudentSession", course = input$courseID, lesson = input$lessonID, instructor = instructor)
     if(length(users_logged) > 0) users_logged %>% .$student %>% unique %>% length
-    else 0
+    else NULL
   })
 
   studentResponses <- reactive({
     input$refresh
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    Parse_retrieve("StudentResponse", course = input$courseID, lesson = input$lessonID, instructor = instructor)
+    student_responses <- Parse_retrieve("StudentResponse",
+                                        course = input$courseID,
+                                        lesson = input$lessonID,
+                                        instructor = instructor)
+    if(length(student_responses)>0) student_responses
+    else NULL
   })
 
   lastUpdateTime <- reactive({
@@ -78,7 +82,7 @@ shinyServer(function(input, output, session) {
         gather(type, time, first, last) %>%
         gather(metric, value, attempted, answered) %>%
         filter((metric == "attempted" & type == "first") |
-                metric == "answered" & type == "last",
+                 metric == "answered" & type == "last",
                value > 0) %>%
         mutate(pct = value / users_logged * 100) %>%
         arrange(time, pct)
@@ -103,23 +107,23 @@ shinyServer(function(input, output, session) {
   output$progressMenu <- renderMenu({
     lectureInfo <- selectedLecture()
     student_responses <- studentResponses()
-    if(length(student_responses)>0 & !is.null(lectureInfo)){
-    progress_breakdown <- student_responses %>%
-      group_by(exercise) %>%
-      distinct(student, exercise, isCorrect) %>%
-      summarise(n = sum(isCorrect)) %>%
-      mutate(pct = n / usersLogged() * 100)
-    progress_breakdown <- left_join(lectureInfo,progress_breakdown, by="exercise") %>%
-      mutate(pct = ifelse(is.na(pct), 0, pct))
+    users_logged <- usersLogged()
+    if(!is.null(student_responses) & !is.null(lectureInfo)){
+      progress_breakdown <- student_responses %>%
+        group_by(exercise) %>%
+        distinct(student, exercise, isCorrect) %>%
+        summarise(n = sum(isCorrect)) %>%
+        mutate(pct = n / users_logged * 100)
+      progress_breakdown <- left_join(lectureInfo,progress_breakdown, by="exercise") %>%
+        mutate(pct = ifelse(is.na(pct), 0, pct))
+      progress_msgs <- apply(progress_breakdown, 1, function(row) {
+        taskItem(value = row[["pct"]],
+                 color = getPctColor(row[["pct"]]),
+                 paste("Exercise:", row[["exercise"]])
+        )
+      })
     }
-    else progress_breakdown <- lectureInfo %>% mutate(pct=0)
-    progress_msgs <- apply(progress_breakdown, 1, function(row) {
-      taskItem(value = row[["pct"]],
-               color = getPctColor(row[["pct"]]),
-               paste("Exercise:", row[["exercise"]])
-      )
-    })
-
+    else progress_msgs = list()
     dropdownMenu(type = "tasks", .list = progress_msgs)
   })
 
@@ -129,18 +133,21 @@ shinyServer(function(input, output, session) {
     #Add warning if no student's registered yet
     active_courses = activeCourses()
     courses = as.list(unique(active_courses$course))
-    selectInput("courseID", label = "Course:", choices = unique(active_courses$course),
+    selectInput("courseID", label = "Course:",
+                choices = unique(active_courses$course),
                 selected = current_course)
   })
 
   output$selectLesson <- renderUI({
     active_courses = activeCourses()
     lessons = filter(active_courses, course == input$courseID) %>% .$lesson %>% unique %>% as.list
-    selectInput("lessonID", label = "Lesson:", lessons, selected = current_lesson)
+    selectInput("lessonID", label = "Lesson:",
+                lessons,
+                selected = current_lesson)
   })
 
   output$usersessions <- renderUI({
-      h3("Sessions:", as.character(usersLogged()))
+    h3("Sessions:", as.character(usersLogged()))
   })
 
   output$timeSinceLastUpdate <- renderUI({
@@ -158,23 +165,36 @@ shinyServer(function(input, output, session) {
   # BODY ------------
   output$selectExercise <- renderUI({
     lectureInfo <- selectedLecture()
-    exercises = as.list(lectureInfo$exercise)
+    if(!is.null(lectureInfo)) exercises = as.list(lectureInfo$exercise)
+    else exercises = list()
     selectInput("exerciseID", label = NULL, exercises, selected = "1")
   })
+
   output$attemptedBar <- renderUI({
     selected_exercise = selectedExercise()
-    if(!is.null(selected_exercise)) attempted = selected_exercise %>% distinct(student) %>% nrow
-    else attempted = 0
+    if(!is.null(selected_exercise)){
+      attempted = selected_exercise %>% distinct(student) %>% nrow
+      attempted_pct = round(attempted/usersLogged() * 100)
+    }
+    else{
+      attempted = 0
+      attempted_pct = 0
+    }
     #FIX: Error in eval(substitute(expr), envir, enclos) : incorrect length (0), expecting: 38,
-    attempted_pct = round(attempted/usersLogged() * 100)
     taskItem(paste("Attempted:", attempted) , value = attempted_pct, color = getPctColor(attempted_pct))
   })
 
   output$completedBar <- renderUI({
     selected_exercise = selectedExercise()
-    if(!is.null(selected_exercise)) completed = selectedExercise() %>% filter(isCorrect) %>% distinct(student) %>% nrow
-    else completed = 0
-    completed_pct = round(completed/usersLogged() * 100)
+    if(!is.null(selected_exercise)){
+      completed = selectedExercise() %>% filter(isCorrect) %>% distinct(student) %>% nrow
+      completed_pct = round(completed/usersLogged() * 100)
+    }
+    else {
+      completed = 0
+      completed_pct = 0
+    }
+
     taskItem(paste("Completed:", completed) , value = completed_pct, color = getPctColor(completed_pct))
   })
 
@@ -200,7 +220,7 @@ shinyServer(function(input, output, session) {
   #NOTES: add switch dropdown for multiple plots, or consider gridextra
   output$exerciseGraph <- renderPlot({
     exercise_data <- selectedExercise()
-    if(nrow(exercise_data) == 0 ) NULL
+    if(is.null(exercise_data)) NULL
     else{
       exercise_tt <- exerciseTemporalTable()
       switch(input$exerciseGraphSelect,
@@ -227,20 +247,20 @@ shinyServer(function(input, output, session) {
 
   output$overviewGraph <- renderPlot({
     all_exercise_data <- studentResponses()
-    if(nrow(all_exercise_data) == 0 ) NULL
+    if(is.null(all_exercise_data) ) NULL
     else{
       all_exercise_data %>% mutate(exercise=paste0("Exercise #",exercise)) %>%
-      count(exercise,student) %>%
-      select(-student) %>%
-      mutate(n=as.character(n)) %>%
-      count(exercise,attempts=n) %>%
-      ggplot(aes(x = as.numeric(attempts), y = n, fill = as.numeric(attempts))) +
-      geom_bar(stat = "identity", position = "dodge") + facet_wrap(~ exercise) +
-      theme_bw() +
-      scale_x_discrete() +
-      scale_y_discrete() +
-      xlab("Attempts") + ylab("Frequency") +
-      guides(fill = FALSE)
+        count(exercise,student) %>%
+        select(-student) %>%
+        mutate(n=as.character(n)) %>%
+        count(exercise,attempts=n) %>%
+        ggplot(aes(x = as.numeric(attempts), y = n, fill = as.numeric(attempts))) +
+        geom_bar(stat = "identity", position = "dodge") + facet_wrap(~ exercise) +
+        theme_bw() +
+        scale_x_discrete() +
+        scale_y_discrete() +
+        xlab("Attempts") + ylab("Frequency") +
+        guides(fill = FALSE)
     }
   })
 
