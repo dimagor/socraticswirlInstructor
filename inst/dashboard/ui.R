@@ -44,12 +44,12 @@ body <- dashboardBody(
                          uiOutput("attemptedBar", style = "list-style-type: none;"),
                          uiOutput("completedBar", style = "list-style-type: none;")),
                      # Plots
-                     box(collapsible = FALSE, width = NULL, title = "Student Attempts",
-                         selectInput("exerciseGraphSelect", label = NULL,
-                                     choices = c("Attempt Frequency" = "attemptbar",
-                                                 "Progress Tracking" = "timetracking")),
-                         plotOutput("exerciseGraph")
-                         )
+                     tabBox(width = NULL,
+                       tabPanel(title = "Attempt Frequency",
+                                plotOutput("plotFreqAttempts")),
+                       tabPanel(title = "Progress Tracking",
+                                plotOutput("plotProgress"))
+                     )
               ),
 
               # Right Column
@@ -62,6 +62,10 @@ body <- dashboardBody(
                      # TODO: Capture Filter/Sort and use as input for tableoutput to preserve post refresh
                      # Answer Table
                      box(collapsible = FALSE, width = NULL, title = "Incorrect Answers",
+                         selectInput("incorrectSort", label = "Sort Column:", width = "50%",
+                                     choices = c("updatedAt", "command", "isError", "errorMsg"),
+                                     selected = "updatedAt"),
+                         # checkboxInput("incorrectSortDescending", label = "Descending", value = TRUE),
                          dataTableOutput("incorrectAnswers"))
               )
             )
@@ -73,7 +77,8 @@ body <- dashboardBody(
     ),
     tabItem(tabName = "questions_tab",
             box(width = NULL,
-                dataTableOutput("questionsasked"))
+                dataTableOutput("questionsasked")
+                )
     )
   )
 )

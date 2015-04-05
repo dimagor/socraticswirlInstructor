@@ -1,5 +1,6 @@
 library(shiny)
 library(dplyr)
+library(tidyr)
 library(ggplot2)
 
 shinyServer(function(input, output, session) {
@@ -14,10 +15,14 @@ shinyServer(function(input, output, session) {
     typeColors[round(as.numeric(pct) / 10) + 1]
   }
 
+  studentFactors <- function(students) students %>% factor %>% unclass %>% paste("Student",.)
+
   # Reactive Functions ---------------
 
   # Identify active courses
   activeCourses <- reactive({
+
+    # Store IDs in global for persistence
     current_course <<- input$courseID
     current_lesson <<- input$lessonID
 
@@ -94,11 +99,11 @@ shinyServer(function(input, output, session) {
     input$refresh
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    student_questions <- Parse_retrieve("StudentQuestions",
+    student_questions <- Parse_retrieve("StudentQuestion",
                                         course = input$courseID,
                                         lesson = input$lessonID,
                                         instructor = instructor)
-    if(length(sstudent_questions)>0) student_questions else NULL
+    if(length(student_questions)>0) student_questions else NULL
   })
 
 
@@ -147,7 +152,9 @@ shinyServer(function(input, output, session) {
   })
 
   output$usersessions <- renderUI({
-    h3("Sessions:", as.character(usersLogged()))
+    users_logged <- usersLogged()
+    if(is.null(users_logged)) users_logged = 0
+    h3("Sessions:", as.character(users_logged))
   })
 
   output$timeSinceLastUpdate <- renderUI({
@@ -165,7 +172,7 @@ shinyServer(function(input, output, session) {
   # BODY ------------
   output$selectExercise <- renderUI({
     lectureInfo <- selectedLecture()
-    if(!is.null(lectureInfo)) exercises = as.list(lectureInfo$exercise)
+    if(!is.null(lectureInfo)) exercises = as.list(sort(lectureInfo$exercise))
     else exercises = list()
     selectInput("exerciseID", label = NULL, exercises, selected = "1")
   })
@@ -180,8 +187,8 @@ shinyServer(function(input, output, session) {
       attempted = 0
       attempted_pct = 0
     }
-    #FIX: Error in eval(substitute(expr), envir, enclos) : incorrect length (0), expecting: 38,
-    taskItem(paste("Attempted:", attempted) , value = attempted_pct, color = getPctColor(attempted_pct))
+    # color = getPctColor(attempted_pct)
+    taskItem(paste("Attempted:", attempted) , value = attempted_pct, color = "red")
   })
 
   output$completedBar <- renderUI({
@@ -194,8 +201,8 @@ shinyServer(function(input, output, session) {
       completed = 0
       completed_pct = 0
     }
-
-    taskItem(paste("Completed:", completed) , value = completed_pct, color = getPctColor(completed_pct))
+    # color = getPctColor(completed_pct)
+    taskItem(paste("Completed:", completed) , value = completed_pct, color = "blue")
   })
 
   output$exerciseQuestion <- renderText({
@@ -210,39 +217,51 @@ shinyServer(function(input, output, session) {
     else NULL
   })
 
-  output$incorrectAnswers <- renderDataTable({
+
+  output$incorrectAnswers <- renderDataTable(
+    options = list(
+      lengthChange=FALSE, pageLength = 20,
+      searching = FALSE,
+      ordering = FALSE),{
     selected_exercise <- selectedExercise()
-    if(!is.null(selected_exercise)) selected_exercise %>% filter(!isCorrect) %>% count(Command=command) %>% arrange(-n)
+    if(!is.null(selected_exercise)){
+      selected_exercise <- selected_exercise %>%
+      filter(!isCorrect) %>%
+      select(command, isError, errorMsg, updatedAt)
+      selected_exercise[order(selected_exercise[[input$incorrectSort]],decreasing = TRUE), ]
+      }
+
     else NULL
   })
 
-  #TODO: Fun placeholder, make something sensible
-  #NOTES: add switch dropdown for multiple plots, or consider gridextra
-  output$exerciseGraph <- renderPlot({
+  output$plotFreqAttempts <- renderPlot({
     exercise_data <- selectedExercise()
-    if(is.null(exercise_data)) NULL
-    else{
-      exercise_tt <- exerciseTemporalTable()
-      switch(input$exerciseGraphSelect,
-             "attemptbar" = exercise_data %>% count(student) %>%
-               count(attempts=factor(n)) %>%
-               ggplot(aes(x = attempts, y = n, fill = attempts)) +
-               geom_bar(stat = "identity", fill = "#6495ED") +
-               coord_flip() +
-               theme_minimal() +
-               xlab("Attempts") + ylab("Frequency") +
-               guides(fill = FALSE) +
-               scale_fill_brewer(),
-             "timetracking" = ggplot(exercise_tt,aes(time,pct, color = metric)) +
-               geom_path(cex=2) + ylim(0,100) +
-               #10 minutes since first attempt or greater
-               xlim(min(exercise_tt$time),max(min(exercise_tt$time) + 600, max(exercise_tt$time))) +
-               ylab("% of Students") + xlab("") +
-               scale_color_discrete(name = "" ,labels = c("Attempted", "Completed")) +
-               theme_classic() +
-               theme(legend.justification=c(1,0), legend.position=c(1,0))
-      )
+    if(!is.null(exercise_data)){
+      exercise_data %>% count(student) %>%
+      count(attempts=factor(n)) %>%
+      ggplot(aes(x = attempts, y = n, fill = attempts)) +
+      geom_bar(stat = "identity", fill = "#6495ED") +
+      theme_minimal() +
+      xlab("Number of Attempts") + ylab("Frequency") +
+      guides(fill = FALSE) +
+      scale_fill_brewer()
     }
+    else NULL
+  })
+
+  output$plotProgress <- renderPlot({
+    exercise_tt <- exerciseTemporalTable()
+    if(!is.null(exercise_tt)){
+      ggplot(exercise_tt,aes(time,pct, color = metric)) +
+      geom_path(cex=2) + ylim(0,100) +
+      #10 minutes since first attempt or greater
+      xlim(min(exercise_tt$time),max(min(exercise_tt$time) + 600, max(exercise_tt$time))) +
+      ylab("% of Students") + xlab("") +
+      scale_color_discrete(name = "" ,labels = c("Attempted", "Completed")) +
+      theme_classic() +
+      theme(legend.justification=c(1,0), legend.position=c(1,0))
+    }
+    else NULL
   })
 
   output$overviewGraph <- renderPlot({
@@ -264,8 +283,14 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  output$questionsasked <- renderDataTable(
-    studentQuestions() %>% arrange(desc(updatedAt)) %>% select(question, updatedAt, student)
-  )
+  output$questionsasked <- renderDataTable({
+    student_questions <- studentQuestions()
+    if(!is.null(student_questions))
+      student_questions %>%
+      mutate(student = studentFactors(student)) %>%
+      arrange(desc(updatedAt)) %>%
+      select(Questions = question, Student = student, Time = updatedAt)
+    else NULL
+  })
 
 })
