@@ -5,17 +5,17 @@ source("~/.Rprofile")
 # #
 # # Fields: course, lesson, instructor, student
 #
-for(i in seq(25)) swirl:::Parse_create("StudentSession",
+for(i in seq(25)) Parse_create("StudentSession",
                                        course="default",
                                        lesson="ggplot",
                                        instructor="dima",
                                        student=digest(i))
-for(i in seq(25)) swirl:::Parse_create("StudentSession",
+for(i in seq(25)) Parse_create("StudentSession",
                                        course="default",
                                        lesson="vectors",
                                        instructor="dima",
                                        student=digest(i))
-for(i in seq(25)) swirl:::Parse_create("StudentSession",
+for(i in seq(25)) Parse_create("StudentSession",
                                        course="default",
                                        lesson="ggplot",
                                        instructor="dgrtwo",
@@ -45,7 +45,7 @@ simulateStudents <- function(answerpool,  #Assume first is correct
       isCorrect = command == answerpool[1]
       isError = ifelse(command != answerpool[1],sample(c(TRUE,FALSE),1),FALSE)
       errorMsg = if (isError) sample(commonErrors,1) else NULL
-      swirl:::Parse_create("StudentResponse",
+      Parse_create("StudentResponse",
                            course = course,
                            lesson = lesson,
                            instructor = instructor,
@@ -86,14 +86,14 @@ simulateStudents(answerpool = q2_ans, exercise = 2, maxsleep = 12, sampledstuden
 
 
 # Lecture DB --------------
-swirl:::Parse_create("Exercise",course="default",lesson="ggplot", exercise=1, prompt="Load ggplot library", answer="library(ggplot2)")
-swirl:::Parse_create("Exercise",course="default",lesson="ggplot", exercise=2, prompt="Count the diamonds db by color", answer="count(diamonds,color)")
-swirl:::Parse_create("Exercise",course="default",lesson="ggplot", exercise=3, prompt="Plot diamonds: carat vs price", answer="ggplot(diamonds,aes(carat,price))+geom_point()")
-swirl:::Parse_create("Exercise",course="default",lesson="ggplot", exercise=4, prompt="Plot diamonds: carat vs price with color breakdown", answer="ggplot(diamonds,aes(carat,price,color=color))+geom_point()")
+Parse_create("Exercise",course="default",lesson="ggplot", exercise=1, prompt="Load ggplot library", answer="library(ggplot2)")
+Parse_create("Exercise",course="default",lesson="ggplot", exercise=2, prompt="Count the diamonds db by color", answer="count(diamonds,color)")
+Parse_create("Exercise",course="default",lesson="ggplot", exercise=3, prompt="Plot diamonds: carat vs price", answer="ggplot(diamonds,aes(carat,price))+geom_point()")
+Parse_create("Exercise",course="default",lesson="ggplot", exercise=4, prompt="Plot diamonds: carat vs price with color breakdown", answer="ggplot(diamonds,aes(carat,price,color=color))+geom_point()")
 
-swirl:::Parse_create("Exercise",course="default",lesson="vectors", exercise=1, prompt="Use seq to make a vector 1-10", answer="seq(10)")
+Parse_create("Exercise",course="default",lesson="vectors", exercise=1, prompt="Use seq to make a vector 1-10", answer="seq(10)")
 
 # QuestionDB
 questions <- c("Whats your (full) name?", "How old are you?", "Whats your Birthday?", "What starsign does that make it?", "Whats your favourite colour?", "Whats your lucky number?", "Do you have any pets?", "Where are you from?", "How tall are you?", "What shoe size are you?", "How many pairs of shoes do you own?")
 
-for(i in questions) swirl:::Parse_create("StudentQuestion",course="default",lesson="ggplot", instructor="dima", student = digest(sample(1:10,1)), addressed = FALSE, question = i)
+for(i in questions) Parse_create("StudentQuestion",course="default",lesson="ggplot", instructor="dima", student = digest(sample(1:10,1)), addressed = FALSE, question = i)
