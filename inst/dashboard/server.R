@@ -2,6 +2,7 @@ library(shiny)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(rparse)
 
 shinyServer(function(input, output, session) {
   current_course <- NULL
@@ -29,13 +30,16 @@ shinyServer(function(input, output, session) {
     input$refresh #Refresh when button is clicked
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    active_courses = Parse_retrieve("StudentSession", instructor = instructor)
-    if(length(active_courses)>0)  active_courses %>% select(course,lesson) %>% distinct
-    else data_frame(course = "NoStudents", lesson = "NoStudents")
+    active_courses = parse_query("StudentSession", instructor = instructor)
+    if (length(active_courses)>0) {
+      active_courses %>% select(course, lesson) %>% distinct
+    } else {
+      data_frame(course = "NoStudents", lesson = "NoStudents")
+    }
   })
 
   selectedLecture <- reactive({
-    selected_lecture <- Parse_retrieve("Exercise", course = input$courseID, lesson = input$lessonID)
+    selected_lecture <- parse_query("Exercise", course = input$courseID, lesson = input$lessonID)
     if(length(selected_lecture)>0) selected_lecture else NULL
   })
 
@@ -43,7 +47,7 @@ shinyServer(function(input, output, session) {
     input$refresh #Refresh when button is clicked
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    users_logged <- Parse_retrieve("StudentSession", course = input$courseID, lesson = input$lessonID, instructor = instructor)
+    users_logged <- parse_query("StudentSession", course = input$courseID, lesson = input$lessonID, instructor = instructor)
     if(length(users_logged) > 0) users_logged %>% .$student %>% unique %>% length
     else NULL
   })
@@ -52,7 +56,7 @@ shinyServer(function(input, output, session) {
     input$refresh
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    student_responses <- Parse_retrieve("StudentResponse",
+    student_responses <- parse_query("StudentResponse",
                                         course = input$courseID,
                                         lesson = input$lessonID,
                                         instructor = instructor)
@@ -99,7 +103,7 @@ shinyServer(function(input, output, session) {
     input$refresh
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    student_questions <- Parse_retrieve("StudentQuestion",
+    student_questions <- parse_query("StudentQuestion",
                                         course = input$courseID,
                                         lesson = input$lessonID,
                                         instructor = instructor)
@@ -207,14 +211,20 @@ shinyServer(function(input, output, session) {
 
   output$exerciseQuestion <- renderText({
     lectureInfo <- selectedLecture()
-    if(!is.null(lectureInfo)) lectureInfo %>% filter(exercise == input$exerciseID) %>% .$prompt
-    else NULL
+    if(!is.null(lectureInfo)) {
+      lectureInfo %>% filter(exercise == input$exerciseID) %>% .$prompt
+    } else {
+      NULL
+    }
   })
 
   output$exerciseAnswer <- renderText({
     lectureInfo <- selectedLecture()
-    if(!is.null(lectureInfo)) lectureInfo %>% filter(exercise == input$exerciseID) %>% .$answer
-    else NULL
+    if(!is.null(lectureInfo)) {
+      lectureInfo %>% filter(exercise == input$exerciseID) %>% .$answer
+    } else {
+      NULL
+    }
   })
 
 
@@ -285,12 +295,14 @@ shinyServer(function(input, output, session) {
 
   output$questionsasked <- renderDataTable({
     student_questions <- studentQuestions()
-    if(!is.null(student_questions))
+    if(!is.null(student_questions)) {
       student_questions %>%
       mutate(student = studentFactors(student)) %>%
       arrange(desc(updatedAt)) %>%
       select(Questions = question, Student = student, Time = updatedAt)
-    else NULL
+    } else {
+      NULL
+    }
   })
 
 })

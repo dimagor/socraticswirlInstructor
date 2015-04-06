@@ -1,12 +1,18 @@
 Package: socraticswirlInstructor
-Title: What the Package Does (one line, title case)
+Title: Instructor side of the Socratic Swirl application
 Version: 0.0.0.9000
-Authors@R: person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph)
+Authors@R: c(
+    person("Dima", "Gorenshteyn", email = "dimaoo7@gmail.com", role = c("aut", "cre")),
+    person("David", "Robinson", email = "admiral.david@gmail.com", role = c("aut"))
+    )
+Maintainer: Dima Gorenshteyn <dimaoo7@gmail.com>
+Description: Instructor side of the Socratic Swirl application, including a dashboard
+  for tracking student responses and tools for uploading courses.
 Depends: R (>= 3.1.0)
-Imports: shiny,
+Imports: rparse,
+  shiny,
   dplyr,
   tidyr,
   shinydashboard
-License: What license is it under?
+License: GPL-3
 LazyData: true
