@@ -1,28 +1,27 @@
 library(digest)
-source("~/.Rprofile")
+library(dplyr)
+library(rparse)
+
+# source("~/.Rprofile")
 
 # # Student Session ---------------
 # #
 # # Fields: course, lesson, instructor, student
 #
-for(i in seq(25)) swirl:::Parse_create("StudentSession",
-                                       course="default",
-                                       lesson="ggplot",
-                                       instructor="dima",
-                                       student=digest(i))
-for(i in seq(25)) swirl:::Parse_create("StudentSession",
-                                       course="default",
-                                       lesson="vectors",
-                                       instructor="dima",
-                                       student=digest(i))
-for(i in seq(25)) swirl:::Parse_create("StudentSession",
-                                       course="default",
-                                       lesson="ggplot",
-                                       instructor="dgrtwo",
-                                       student=digest(i))
 
+# delete existing sessions
+current_sessions <- parse_query("StudentSession", course = "default")
 
+# create in a batch
 
+student_sessions <- data_frame(
+  course = "default",
+  lesson = rep(c("ggplot2", "vectors", "ggplot2"), each = 25),
+  instructor = rep(c("dima", "dima", "dgrtwo"), each = 25),
+  student = sapply(1:75, digest)
+)
+
+parse_save(student_sessions, "StudentSession")
 
 
 # Student Response ----------------------
@@ -45,16 +44,16 @@ simulateStudents <- function(answerpool,  #Assume first is correct
       isCorrect = command == answerpool[1]
       isError = ifelse(command != answerpool[1],sample(c(TRUE,FALSE),1),FALSE)
       errorMsg = if (isError) sample(commonErrors,1) else NULL
-      swirl:::Parse_create("StudentResponse",
-                           course = course,
-                           lesson = lesson,
-                           instructor = instructor,
-                           student = digest(s),
-                           exercise = exercise,
-                           isCorrect = isCorrect,
-                           command = command,
-                           isError =  isError,
-                           errorMsg = errorMsg)
+      parse_object("StudentResponse",
+                   course = course,
+                   lesson = lesson,
+                   instructor = instructor,
+                   student = digest(s),
+                   exercise = exercise,
+                   isCorrect = isCorrect,
+                   command = command,
+                   isError =  isError,
+                   errorMsg = errorMsg)
       if(isCorrect) break
       pause = sample(seq(1,maxsleep),1)
       print(paste("Waiting ", as.character(pause)))

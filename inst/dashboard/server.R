@@ -2,6 +2,8 @@ library(shiny)
 library(dplyr)
 library(ggplot2)
 library(swirl)
+library(rparse)
+
 
 shinyServer(function(input, output, session) {
   instructor <- getOption("socratic_swirl_instructor")
@@ -11,21 +13,21 @@ shinyServer(function(input, output, session) {
     typeColors = c("black","red","orange","yellow","light-blue","navy","teal","aqua","lime","olive","green")
     typeColors[round(as.numeric(pct) / 10) + 1]
   }
-  lectureInfo <- Parse_retrieve("lecdb_dima", instructor = instructor)
+  lectureInfo <- parse_query("lecdb_dima", instructor = instructor)
 
   # Reactive Functions ---------------
   usersLogged <- reactive({
     input$refresh #Refresh when button is clicked
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    Parse_retrieve("udb_dima") %>% .$student %>% unique %>% length
+    parse_query("udb_dima") %>% .$student %>% unique %>% length
   })
 
   questionsAnswered <- reactive({
     input$refresh
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    Parse_retrieve("adb_dima") %>% group_by()
+    parse_query("adb_dima") %>% group_by()
   })
 
   lastUpdateTime <- reactive({
@@ -50,7 +52,7 @@ shinyServer(function(input, output, session) {
     input$refresh
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    Parse_retrieve("questdb_dima") %>% group_by()
+    parse_query("questdb_dima") %>% group_by()
   })
 
 
