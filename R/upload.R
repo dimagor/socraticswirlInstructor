@@ -63,11 +63,10 @@ upload_course <- function(directory) {
 
   # zip the file
   outzip <- ".forupload.zip"
-  zip(outzip, directory, "-q")
+  zip(outzip, directory)
 
   # upload the file, and delete temporary one
   f <- parse_file(paste0(course_title, ".zip"), outzip)
-  unlink(outzip)
 
   existing_courses <- parse_query("Course", title = course_title)
   if (is.null(existing_courses)) {
@@ -82,6 +81,7 @@ upload_course <- function(directory) {
     co$zipfile <- f
     parse_save(co)
   }
+  unlink(outzip)
 
   invisible()
 }
