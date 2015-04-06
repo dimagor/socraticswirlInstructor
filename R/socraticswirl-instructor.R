@@ -5,11 +5,11 @@
 #'
 #' @param username desired username
 #' @param password your password
-#' @param email e-mail address, which will sent a confirmation link
+#' @param email e-mail address, which will be sent a confirmation link
 #'
 #' @export
 socratic_swirl_signup <- function(username, password, email) {
-  Parse_signup(username, password, email = email)
+  parse_signup(username, password, email = email)
 }
 
 
@@ -23,7 +23,7 @@ socratic_swirl_signup <- function(username, password, email) {
 #'
 #' @export
 socratic_swirl_instructor <- function(username, password) {
-  u <- Parse_login(username, password)
+  u <- parse_login(username, password)
   options(socratic_swirl_instructor = u$username)
 }
 
@@ -34,6 +34,12 @@ socratic_swirl_instructor <- function(username, password) {
 #'
 #' @export
 dashboard <- function() {
+  u <- getOption("parse_user")
+  if (is.null("parse_user")) {
+    stop("Not signed in; use socratic_swirl_instructor()",
+         "to sign in before starting the dashboard")
+  }
+
   app <- system.file("dashboard", package = "socraticswirlInstructor")
   shiny::runApp(app, launch.browser = TRUE)
 }

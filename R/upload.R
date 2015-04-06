@@ -48,6 +48,11 @@ upload_course <- function(directory) {
                                    answer = as.character(CorrectAnswer),
                                    hint = Hint)
 
+  # ensure others cannot alter exercises or courses
+  private_acl <- ACL(public_write = FALSE)
+
+  full_batched$ACL <- lapply(seq_len(nrow(full_batched)), function(i) private_acl)
+
   # delete any existing exercises
   existing_exercises <- parse_query("Exercise", course = course_title)
   if (!is.null(existing_exercises)) {
@@ -67,7 +72,8 @@ upload_course <- function(directory) {
   existing_courses <- parse_query("Course", title = course_title)
   if (is.null(existing_courses)) {
     # create new zipfile
-    co <- parse_object("Course", title = course_title, owner = u, zipfile = f)
+    co <- parse_object("Course", title = course_title, owner = u, zipfile = f,
+                       ACL = private_acl)
   } else if (nrow(existing_courses) > 1) {
     stop("Multiple courses with this name; this should not happen")
   } else {
@@ -76,4 +82,6 @@ upload_course <- function(directory) {
     co$zipfile <- f
     parse_save(co)
   }
+
+  invisible()
 }
