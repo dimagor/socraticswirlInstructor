@@ -83,14 +83,15 @@ simulateStudents(answerpool = q2_ans, exercise = 2, maxsleep = 12, sampledstuden
 
 
 
-
 # Lecture DB --------------
-swirl:::Parse_create("Exercise",course="default",lesson="ggplot", instructor="dima", exercise=1, prompt="Load ggplot library", answer="library(ggplot2)")
-swirl:::Parse_create("Exercise",course="default",lesson="ggplot", instructor="dima", exercise=2, prompt="Count the diamonds db by color", answer="count(diamonds,color)")
-swirl:::Parse_create("Exercise",course="default",lesson="ggplot", instructor="dima", exercise=3, prompt="Plot diamonds: carat vs price", answer="ggplot(diamonds,aes(carat,price))+geom_point()")
-swirl:::Parse_create("Exercise",course="default",lesson="ggplot", instructor="dima", exercise=4, prompt="Plot diamonds: carat vs price with color breakdown", answer="ggplot(diamonds,aes(carat,price,color=color))+geom_point()")
+parse_object("Exercise",course="default",lesson="ggplot", exercise=1, prompt="Load ggplot library", answer="library(ggplot2)")
+parse_object("Exercise",course="default",lesson="ggplot", exercise=2, prompt="Count the diamonds db by color", answer="count(diamonds,color)")
+parse_object("Exercise",course="default",lesson="ggplot", exercise=3, prompt="Plot diamonds: carat vs price", answer="ggplot(diamonds,aes(carat,price))+geom_point()")
+parse_object("Exercise",course="default",lesson="ggplot", exercise=4, prompt="Plot diamonds: carat vs price with color breakdown", answer="ggplot(diamonds,aes(carat,price,color=color))+geom_point()")
+
+parse_object("Exercise",course="default",lesson="vectors", exercise=1, prompt="Use seq to make a vector 1-10", answer="seq(10)")
 
 # QuestionDB
 questions <- c("Whats your (full) name?", "How old are you?", "Whats your Birthday?", "What starsign does that make it?", "Whats your favourite colour?", "Whats your lucky number?", "Do you have any pets?", "Where are you from?", "How tall are you?", "What shoe size are you?", "How many pairs of shoes do you own?")
 
-for(i in questions) swirl:::Parse_create("StudentQuestion",course="default",lesson="ggplot", instructor="dima", student = digest(sample(1:10,1)), addressed = FALSE, question = i)
+for(i in questions) parse_object("StudentQuestion",course="default",lesson="ggplot", instructor="dima", student = digest(sample(1:10,1)), addressed = FALSE, question = i)
