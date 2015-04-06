@@ -2,12 +2,7 @@ library(shiny)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-<<<<<<< HEAD
-library(swirl)
 library(rparse)
-
-=======
->>>>>>> c1e39e9ba05870dec68b1962bb6ebacc52b05b81
 
 shinyServer(function(input, output, session) {
   current_course <- NULL
@@ -20,12 +15,9 @@ shinyServer(function(input, output, session) {
     typeColors = c("black","red","orange","yellow","light-blue","navy","teal","aqua","lime","olive","green")
     typeColors[round(as.numeric(pct) / 10) + 1]
   }
-<<<<<<< HEAD
   lectureInfo <- parse_query("lecdb_dima", instructor = instructor)
-=======
 
   studentFactors <- function(students) students %>% factor %>% unclass %>% paste("Student",.)
->>>>>>> c1e39e9ba05870dec68b1962bb6ebacc52b05b81
 
   # Reactive Functions ---------------
 
@@ -39,13 +31,13 @@ shinyServer(function(input, output, session) {
     input$refresh #Refresh when button is clicked
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    active_courses = Parse_retrieve("StudentSession", instructor = instructor)
+    active_courses = parse_query("StudentSession", instructor = instructor)
     if(length(active_courses)>0)  active_courses %>% select(course,lesson) %>% distinct
     else data_frame(course = "NoStudents", lesson = "NoStudents")
   })
 
   selectedLecture <- reactive({
-    selected_lecture <- Parse_retrieve("Exercise", course = input$courseID, lesson = input$lessonID)
+    selected_lecture <- parse_query("Exercise", course = input$courseID, lesson = input$lessonID)
     if(length(selected_lecture)>0) selected_lecture else NULL
   })
 
@@ -53,29 +45,21 @@ shinyServer(function(input, output, session) {
     input$refresh #Refresh when button is clicked
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-<<<<<<< HEAD
-    parse_query("udb_dima") %>% .$student %>% unique %>% length
-=======
-    users_logged <- Parse_retrieve("StudentSession", course = input$courseID, lesson = input$lessonID, instructor = instructor)
+    users_logged <- parse_query("StudentSession", course = input$courseID, lesson = input$lessonID, instructor = instructor)
     if(length(users_logged) > 0) users_logged %>% .$student %>% unique %>% length
     else NULL
->>>>>>> c1e39e9ba05870dec68b1962bb6ebacc52b05b81
   })
 
   studentResponses <- reactive({
     input$refresh
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-<<<<<<< HEAD
-    parse_query("adb_dima") %>% group_by()
-=======
-    student_responses <- Parse_retrieve("StudentResponse",
+    student_responses <- parse_query("StudentResponse",
                                         course = input$courseID,
                                         lesson = input$lessonID,
                                         instructor = instructor)
     if(length(student_responses)>0) student_responses
     else NULL
->>>>>>> c1e39e9ba05870dec68b1962bb6ebacc52b05b81
   })
 
   lastUpdateTime <- reactive({
@@ -117,15 +101,11 @@ shinyServer(function(input, output, session) {
     input$refresh
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-<<<<<<< HEAD
-    parse_query("questdb_dima") %>% group_by()
-=======
-    student_questions <- Parse_retrieve("StudentQuestion",
+    student_questions <- parse_query("StudentQuestion",
                                         course = input$courseID,
                                         lesson = input$lessonID,
                                         instructor = instructor)
     if(length(student_questions)>0) student_questions else NULL
->>>>>>> c1e39e9ba05870dec68b1962bb6ebacc52b05b81
   })
 
 

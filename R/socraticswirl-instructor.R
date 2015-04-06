@@ -7,9 +7,11 @@
 #' @param password your password
 #' @param email e-mail address, which will sent a confirmation link
 #'
+#' @import rparse
+#'
 #' @export
 socratic_swirl_signup <- function(username, password, email) {
-  Parse_signup(username, password, email = email)
+  parse_signup(username, password, email = email)
 }
 
 
@@ -21,9 +23,11 @@ socratic_swirl_signup <- function(username, password, email) {
 #' @param username account username
 #' @param password account password
 #'
+#' @import rparse
+#'
 #' @export
 socratic_swirl_instructor <- function(username, password) {
-  u <- Parse_login(username, password)
+  u <- parse_login(username, password)
   options(socratic_swirl_instructor = u$username)
 }
 
@@ -41,39 +45,65 @@ upload_course <- function(directory) {
 
   course_title <- gsub("_", " ", basename(directory))
 
+  ## add Exercise objects to database
+  full_batched <- NULL
+  lesson_dirs <- list.files(directory, full.names = TRUE, include.dirs = TRUE)
+
+  if (length(lesson_dirs) == 0) {
+    stop("No lessons found in course")
+  }
+
+  for (lesson_dir in lesson_dirs) {
+    yaml_file <- file.path(lesson_dir, "lesson.yaml")
+    if (!file.exists(yaml_file)) {
+      stop("lesson.yaml not found in ", lesson_dir)
+    }
+    y <- yaml::yaml.load_file(yaml_file)
+
+    lesson_name <- gsub("_", " ", basename(lesson_dir))
+
+    batched <- dplyr::rbind_all(lapply(y[-1], as.data.frame, stringsAsFactors = FALSE))
+
+    full_batched <- rbind(batched, full_batched)
+  }
+
+  full_batched <- dplyr::transmute(full_batched,
+                                   course = course_title,
+                                   lesson = lesson_name,
+                                   exercise = seq_len(n()),
+                                   prompt = Output,
+                                   answer = as.character(CorrectAnswer),
+                                   hint = Hint)
+
+  # delete any existing exercises
+  existing_exercises <- parse_query("Exercise", course = course_title)
+  if (!is.null(existing_exercises)) {
+    message("Deleting ", nrow(existing_exercises), " existing exercises in ", course_title)
+    parse_delete(existing_exercises)
+  }
+  parse_save(full_batched, "Exercise")
+
   # zip the file
   outzip <- ".forupload.zip"
-  zip(outzip, directory)
+  zip(outzip, directory, "-q")
 
-  # upload the file
-  f <- Parse_upload_file(paste0(basename(directory), ".zip"), outzip)
-
-  # ret <- Parse_create("Course", title = course_title,
-  #              owner = convert_pointer(u),
-  #              zipfile = convert_pointer(f))
-  # delete temporary zip file
+  # upload the file, and delete temporary one
+  f <- parse_file(paste0(course_title, ".zip"), outzip)
   unlink(outzip)
 
-  ## add Exercise objects
-  for (lesson_dir in list.files(directory, full.names = TRUE, include.dirs = TRUE)) {
-   yaml_file <- file.path(lesson_dir, "lesson.yaml")
-   y <- yaml::yaml.load_file(yaml_file)
-
-   lesson_name <- gsub("_", " ", basename(lesson_dir))
-
-   for (i in 1:length(y)) {
-     if (i > 1) {
-       e <- y[[i]]
-       Parse_create("Exercise",
-                    course = course_title,
-                    lesson = lesson_name,
-                    exercise = i - 1,  # starts with metadata
-                    prompt = e$Output,
-                    answer = as.character(e$CorrectAnswer),
-                    hint = e$Hint)
-     }
-   }
+  existing_courses <- parse_query("Course", title = course_title)
+  if (is.null(existing_courses)) {
+    # create new zipfile
+    co <- parse_object("Course", title = course_title, owner = u, zipfile = f)
+  } else if (nrow(existing_courses) > 1) {
+    stop("Multiple courses with this name; this should not happen")
+  } else {
+    # update existing course
+    co <- as.parse_object(as.list(existing_courses[1, ]), "Course")
+    co$zipfile <- f
+    parse_save(co)
   }
+
   ret <- NULL
 
   invisible(ret)

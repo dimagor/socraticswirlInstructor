@@ -81,17 +81,45 @@ q2_ans <- c("count(diamonds,color)", "count(diamonds,color)",
 
 simulateStudents(answerpool = q2_ans, exercise = 2, maxsleep = 12, sampledstudents = 7)
 
-
+# clear out existing examples
+existing <- parse_query("Exercise", lesson = "ggplot2")
+if (!is.null(existing)) {
+  parse_delete(existing)
+}
 
 # Lecture DB --------------
-parse_object("Exercise",course="default",lesson="ggplot", exercise=1, prompt="Load ggplot library", answer="library(ggplot2)")
-parse_object("Exercise",course="default",lesson="ggplot", exercise=2, prompt="Count the diamonds db by color", answer="count(diamonds,color)")
-parse_object("Exercise",course="default",lesson="ggplot", exercise=3, prompt="Plot diamonds: carat vs price", answer="ggplot(diamonds,aes(carat,price))+geom_point()")
-parse_object("Exercise",course="default",lesson="ggplot", exercise=4, prompt="Plot diamonds: carat vs price with color breakdown", answer="ggplot(diamonds,aes(carat,price,color=color))+geom_point()")
+prompts <- c("Load ggplot library", "Count the diamonds db by color",
+             "Plot diamonds: carat vs price",
+             "Plot diamonds: carat vs price with color breakdown")
+
+answers <- c("library(ggplot2)", "count(diamonds, color)",
+             "ggplot(diamonds, aes(carat, price)) + geom_point()",
+             "ggplot(diamonds, aes(carat, price, color = color)) + geom_point()")
+
+exercises <- data.frame(course = "default",
+                        lesson = "ggplot2",
+                        exercise = 1:4,
+                        prompt = prompts,
+                        answer = answers)
+
+parse_save(exercises, "Exercise")
 
 parse_object("Exercise",course="default",lesson="vectors", exercise=1, prompt="Use seq to make a vector 1-10", answer="seq(10)")
 
+
 # QuestionDB
+existing <- parse_query("Question", lesson = "ggplot2", instructor = "dima")
+if (!is.null(existing)) {
+  parse_delete(existing)
+}
+
 questions <- c("Whats your (full) name?", "How old are you?", "Whats your Birthday?", "What starsign does that make it?", "Whats your favourite colour?", "Whats your lucky number?", "Do you have any pets?", "Where are you from?", "How tall are you?", "What shoe size are you?", "How many pairs of shoes do you own?")
 
-for(i in questions) parse_object("StudentQuestion",course="default",lesson="ggplot", instructor="dima", student = digest(sample(1:10,1)), addressed = FALSE, question = i)
+questions <- data.frame(course = "default",
+                        lesson = "ggplot2",
+                        instructor = "dima",
+                        student = sapply(seq_along(questions), digest),
+                        addressed = FALSE,
+                        question = seq_along(questions))
+
+parse_save(questions, "Question")
