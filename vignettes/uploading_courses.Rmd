@@ -10,7 +10,8 @@ vignette: >
 ---
 
 ```{r}
-knitr::opts_chunk$set(eval = FALSE)
+library(knitr)
+opts_chunk$set(eval = FALSE)
 ```
 
 You're welcome to give your students the exercises that we built in, but you probably want to offer your own in-class exercises. Here are simple instructions for uploading up your own quiz within SocraticSwirl, so that your students can take it.
@@ -43,18 +44,18 @@ Alternatively you could write a multiple choice question:
 
 Now you've created one or more lessons in your course, which you put into a directory called `my_course`. Suppose it has one lesson in it, called `my_lesson`. Time to upload it!
 
-```{r}
+```{r, eval = FALSE}
 upload_course("my_course")
 ```
 
 Your students can then install and take your lesson with the following line of code. *Make sure* they include the instructor username in the function, which allows you to view the results.
 
-```{r}
+```{r, eval = FALSE}
 socratic_swirl("my_lesson", "my_course", instructor = "your_username")
 ```
 
 Then to view the results in real-time, simply run the dashboard and select that course:
 
-```{r}
+```{r, eval = FALSE}
 dashboard()
 ```

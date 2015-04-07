@@ -10,6 +10,8 @@
 #' @export
 socratic_swirl_signup <- function(username, password, email) {
   parse_signup(username, password, email = email)
+  u <- parse_current_user()
+  options(socratic_swirl_instructor = u$username)
 }
 
 
@@ -23,7 +25,8 @@ socratic_swirl_signup <- function(username, password, email) {
 #'
 #' @export
 socratic_swirl_instructor <- function(username, password) {
-  u <- parse_login(username, password)
+  parse_login(username, password)
+  u <- parse_current_user()
   options(socratic_swirl_instructor = u$username)
 }
 
@@ -31,6 +34,9 @@ socratic_swirl_instructor <- function(username, password) {
 #' Open the SocraticSwirl dashboard
 #'
 #' Opens the SocraticSwirl instructor dashboard in a browser.
+#'
+#' @import shinydashboard
+#' @import tidyr
 #'
 #' @export
 dashboard <- function() {

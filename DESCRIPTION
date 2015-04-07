@@ -13,6 +13,10 @@ Imports: rparse,
   shiny,
   dplyr,
   tidyr,
+  yaml,
   shinydashboard
 License: GPL-3
 LazyData: true
+Suggests: knitr,
+    testthat
+VignetteBuilder: knitr
