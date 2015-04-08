@@ -146,7 +146,7 @@ shinyServer(function(input, output, session) {
         summarise(n = sum(isCorrect)) %>%
         mutate(pct = n / users_logged * 100)
       progress_breakdown <- left_join(lectureInfo,progress_breakdown, by="exercise") %>%
-        mutate(pct = ifelse(is.na(pct), 0, pct))
+        mutate(pct = ifelse(is.na(pct), 0, pct)) %>% arrange(exercise)
       progress_msgs <- apply(progress_breakdown, 1, function(row) {
         taskItem(value = row[["pct"]],
                  color = getPctColor(row[["pct"]]),
@@ -231,10 +231,10 @@ shinyServer(function(input, output, session) {
     taskItem(paste("Completed:", completed) , value = completed_pct, color = "blue")
   })
 
-  output$exerciseQuestion <- renderText({
+  output$exerciseQuestion <- renderUI({
     lectureInfo <- selectedLecture()
     if(!is.null(lectureInfo)) {
-      lectureInfo %>% filter(exercise == input$exerciseID) %>% .$prompt
+      lectureInfo %>% filter(exercise == input$exerciseID) %>% .$prompt %>% h4
     } else {
       NULL
     }
