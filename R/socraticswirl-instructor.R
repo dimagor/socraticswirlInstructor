@@ -7,6 +7,8 @@
 #' @param password your password
 #' @param email e-mail address, which will be sent a confirmation link
 #'
+#' @import rparse
+#'
 #' @export
 socratic_swirl_signup <- function(username, password, email) {
   parse_signup(username, password, email = email)
@@ -35,15 +37,24 @@ socratic_swirl_instructor <- function(username, password) {
 #'
 #' Opens the SocraticSwirl instructor dashboard in a browser.
 #'
+#' @param demo whether to launch a version with demo data
+#'
 #' @import shinydashboard
 #' @import tidyr
 #'
 #' @export
-dashboard <- function() {
-  u <- getOption("parse_user")
-  if (is.null("parse_user")) {
-    stop("Not signed in; use socratic_swirl_instructor()",
-         "to sign in before starting the dashboard")
+dashboard <- function(demo = FALSE) {
+  if (demo) {
+    # set instructor to demo, while returning to original afterwards
+    original_instructor <- getOption("socratic_swirl_instructor")
+    options(socratic_swirl_instructor = "demo")
+    on.exit(options(socratic_swirl_instructor = original_instructor))
+  } else {
+    u <- getOption("parse_user")
+    if (is.null("parse_user")) {
+      stop("Not signed in; use socratic_swirl_instructor()",
+           "to sign in before starting the dashboard")
+    }
   }
 
   app <- system.file("dashboard", package = "socraticswirlInstructor")

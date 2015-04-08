@@ -4,6 +4,20 @@ library(tidyr)
 library(ggplot2)
 library(rparse)
 
+
+# remove list columns from a table
+remove_df_columns <- function(tbl) {
+  if (is.null(tbl)) return(tbl)
+
+  for (cn in names(tbl)) {
+    if (is(tbl[[cn]], "data.frame")) {
+      tbl[[cn]] <- NULL
+    }
+  }
+  tbl
+}
+
+
 shinyServer(function(input, output, session) {
   current_course <- NULL
   current_lesson <- NULL
@@ -30,7 +44,7 @@ shinyServer(function(input, output, session) {
     input$refresh #Refresh when button is clicked
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    active_courses = parse_query("StudentSession", instructor = instructor)
+    active_courses = parse_query("StudentSession", instructor = instructor) %>% remove_df_columns()
     if (length(active_courses)>0) {
       active_courses %>% select(course, lesson) %>% distinct
     } else {
@@ -39,15 +53,19 @@ shinyServer(function(input, output, session) {
   })
 
   selectedLecture <- reactive({
-    selected_lecture <- parse_query("Exercise", course = input$courseID, lesson = input$lessonID)
-    if(length(selected_lecture)>0) selected_lecture else NULL
+    selected_lecture <- parse_query("Exercise", course = input$courseID, lesson = input$lessonID) %>% remove_df_columns()
+    if(length(selected_lecture)>0) {
+      selected_lecture
+    } else {
+      NULL
+    }
   })
 
   usersLogged <- reactive({
     input$refresh #Refresh when button is clicked
     interval <- max(as.numeric(input$interval), 5)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    users_logged <- parse_query("StudentSession", course = input$courseID, lesson = input$lessonID, instructor = instructor)
+    users_logged <- parse_query("StudentSession", course = input$courseID, lesson = input$lessonID, instructor = instructor) %>% remove_df_columns()
     if(length(users_logged) > 0) users_logged %>% .$student %>% unique %>% length
     else NULL
   })
@@ -59,7 +77,8 @@ shinyServer(function(input, output, session) {
     student_responses <- parse_query("StudentResponse",
                                         course = input$courseID,
                                         lesson = input$lessonID,
-                                        instructor = instructor)
+                                        instructor = instructor) %>%
+      remove_df_columns()
     if(length(student_responses)>0) student_responses
     else NULL
   })
@@ -71,7 +90,9 @@ shinyServer(function(input, output, session) {
 
   selectedExercise <- reactive({
     student_responses <- studentResponses()
-    if ( length(student_responses) > 0 ) student_responses %>% filter(exercise == input$exerciseID)
+    if ( length(student_responses) > 0 ) {
+      student_responses %>% filter(exercise == input$exerciseID)
+    }
     else NULL
   })
 
@@ -106,7 +127,8 @@ shinyServer(function(input, output, session) {
     student_questions <- parse_query("StudentQuestion",
                                         course = input$courseID,
                                         lesson = input$lessonID,
-                                        instructor = instructor)
+                                        instructor = instructor) %>%
+      remove_df_columns()
     if(length(student_questions)>0) student_questions else NULL
   })
 

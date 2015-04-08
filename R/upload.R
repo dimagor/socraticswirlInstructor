@@ -9,6 +9,7 @@
 #' be replaced.
 #'
 #' @import rparse
+#' @import dplyr
 #'
 #' @export
 upload_course <- function(directory) {
@@ -42,17 +43,19 @@ upload_course <- function(directory) {
     }
     y <- yaml::yaml.load_file(yaml_file)
 
-    lesson_title <- gsub("_", " ", basename(lesson_dir))
-
     batched <- dplyr::rbind_all(lapply(y[-1], as.data.frame, stringsAsFactors = FALSE))
+
+    batched <- batched %>%
+      mutate(exercise = seq_len(n()),
+             lesson = gsub("_", " ", basename(lesson_dir)))
 
     full_batched <- rbind(batched, full_batched)
   }
 
   full_batched <- dplyr::transmute(full_batched,
                                    course = course_title,
-                                   lesson = lesson_title,
-                                   exercise = seq_len(n()),
+                                   lesson = lesson,
+                                   exercise = exercise,
                                    instructor = username,
                                    prompt = Output,
                                    answer = as.character(CorrectAnswer),

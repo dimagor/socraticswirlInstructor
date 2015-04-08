@@ -4,7 +4,7 @@
 \alias{dashboard}
 \title{Open the SocraticSwirl dashboard}
 \usage{
-dashboard()
+dashboard(demo = FALSE)
 }
 \description{
 Opens the SocraticSwirl instructor dashboard in a browser.

@@ -54,10 +54,11 @@ body <- dashboardBody(
 
               # Right Column
               column(width = 6,
-                     # Question Info
-                     box(collapsible = FALSE, width = NULL, title = "Question Info",
-                         verbatimTextOutput("exerciseQuestion"),
-                         verbatimTextOutput("exerciseAnswer")),
+                     # Exercise Info
+                     box(width = NULL, title = "Exercise Prompt",
+                         verbatimTextOutput("exerciseQuestion")),
+                     #box(width = NULL, title = "Correct Answer",
+                     #    verbatimTextOutput("exerciseAnswer"), collapsible = TRUE),
 
                      # TODO: Capture Filter/Sort and use as input for tableoutput to preserve post refresh
                      # Answer Table
