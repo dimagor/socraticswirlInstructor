@@ -259,12 +259,28 @@ shinyServer(function(input, output, session) {
     if(!is.null(selected_exercise)){
       selected_exercise <- selected_exercise %>%
       filter(!isCorrect) %>%
-      select(command, isError, errorMsg, updatedAt)
-      selected_exercise[order(selected_exercise[[input$incorrectSort]],decreasing = TRUE), ]
+      select("Submitted Command" = command, "Error Message" = errorMsg, TimeSubmitted = updatedAt) %>% arrange(desc(TimeSubmitted))
+      # selected_exercise[order(selected_exercise[[input$incorrectSort]],decreasing = TRUE), ]
       }
 
     else NULL
   })
+
+  output$commonErrors <- renderDataTable(
+    options = list(
+      lengthChange=FALSE, pageLength = 20,
+      searching = FALSE,
+      ordering = FALSE),{
+        selected_exercise <- selectedExercise()
+        if(!is.null(selected_exercise)){
+          selected_exercise <- selected_exercise %>%
+            filter(!isCorrect, isError) %>%
+            select(ErrorMessage = errorMsg) %>%
+            count(ErrorMessage) %>% arrange(desc(Instances))
+        }
+
+        else NULL
+      })
 
   output$plotFreqAttempts <- renderPlot({
     exercise_data <- selectedExercise()
