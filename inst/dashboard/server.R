@@ -323,8 +323,7 @@ shinyServer(function(input, output, session) {
         count(exercise,attempts=n) %>%
         ggplot(aes(x = as.numeric(attempts), y = n, fill = as.numeric(attempts))) +
         geom_bar(stat = "identity", position = "dodge") + facet_wrap(~ exercise) +
-        theme_bw() +
-        scale_x_discrete() +
+        theme_light() +
         scale_y_discrete() +
         xlab("Attempts") + ylab("Frequency") +
         guides(fill = FALSE)
