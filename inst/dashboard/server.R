@@ -276,7 +276,7 @@ shinyServer(function(input, output, session) {
           selected_exercise <- selected_exercise %>%
             filter(!isCorrect, isError) %>%
             select(ErrorMessage = errorMsg) %>%
-            count(ErrorMessage) %>% arrange(desc(Instances))
+            count(ErrorMessage) %>% arrange(desc(n))
         }
 
         else NULL
