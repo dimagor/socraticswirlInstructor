@@ -36,7 +36,7 @@ parse_save(student_sessions, "StudentSession")
 simulateStudents <- function(answerpool,  #Assume first is correct
                              exercise = 1,
                              course = "default",
-                             lesson = "ggplot",
+                             lesson = "ggplot2",
                              instructor = "dima",
                              totalstudents = 25,
                              sampledstudents = 15,
@@ -116,18 +116,18 @@ parse_object("Exercise",course="default",lesson="vectors", exercise=1, prompt="U
 
 
 # QuestionDB
-existing <- parse_query("Question", lesson = "ggplot2", instructor = "dima")
+existing <- parse_query("StudentQuestion", lesson = "ggplot2", instructor = "dima")
 if (!is.null(existing)) {
   parse_delete(existing)
 }
 
-questions <- c("Whats your (full) name?", "How old are you?", "Whats your Birthday?", "What starsign does that make it?", "Whats your favourite colour?", "Whats your lucky number?", "Do you have any pets?", "Where are you from?", "How tall are you?", "What shoe size are you?", "How many pairs of shoes do you own?")
+questionspool <- c("Whats your (full) name?", "How old are you?", "Whats your Birthday?", "What starsign does that make it?", "Whats your favourite colour?", "Whats your lucky number?", "Do you have any pets?", "Where are you from?", "How tall are you?", "What shoe size are you?", "How many pairs of shoes do you own?")
 
 questions <- data.frame(course = "default",
                         lesson = "ggplot2",
                         instructor = "dima",
-                        student = sapply(seq_along(questions), digest),
+                        student = sapply(seq_along(questionspool), digest),
                         addressed = FALSE,
-                        question = seq_along(questions))
+                        question = questionspool[seq_along(questionspool)])
 
-parse_save(questions, "Question")
+parse_save(questions, "StudentQuestion")
