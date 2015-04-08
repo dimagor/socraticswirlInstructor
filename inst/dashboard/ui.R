@@ -55,19 +55,25 @@ body <- dashboardBody(
               # Right Column
               column(width = 6,
                      # Exercise Info
-                     box(width = NULL, title = "Exercise Prompt",
-                         verbatimTextOutput("exerciseQuestion")),
-                     #box(width = NULL, title = "Correct Answer",
-                     #    verbatimTextOutput("exerciseAnswer"), collapsible = TRUE),
+                     tabBox(width = NULL,
+                     tabPanel(title = "Exercise Prompt",
+                         uiOutput("exerciseQuestion")),
+                     tabPanel(title = "Correct Answer",
+                        verbatimTextOutput("exerciseAnswer"), collapsible = TRUE)
+                     ),
 
-                     # TODO: Capture Filter/Sort and use as input for tableoutput to preserve post refresh
                      # Answer Table
-                     box(collapsible = FALSE, width = NULL, title = "Incorrect Answers",
-                         selectInput("incorrectSort", label = "Sort Column:", width = "50%",
-                                     choices = c("updatedAt", "command", "isError", "errorMsg"),
-                                     selected = "updatedAt"),
-                         # checkboxInput("incorrectSortDescending", label = "Descending", value = TRUE),
-                         dataTableOutput("incorrectAnswers"))
+                     tabBox(width = NULL,
+                            tabPanel(title = "Incorrect Answers",
+                                     # selectInput("incorrectSort", label = "Sort Column:", width = "50%",
+                                     # choices = c("updatedAt", "command", "isError", "errorMsg"),
+                                     # selected = "updatedAt"),
+                                     # checkboxInput("incorrectSortDescending", label = "Descending", value = TRUE),
+                                     dataTableOutput("incorrectAnswers")),
+                            tabPanel(title = "Common Errors",
+                                     dataTableOutput("commonErrors")
+                            )
+                     )
               )
             )
     ),

@@ -152,7 +152,7 @@ shinyServer(function(input, output, session) {
         summarise(n = sum(isCorrect)) %>%
         mutate(pct = n / users_logged * 100)
       progress_breakdown <- left_join(lectureInfo,progress_breakdown, by="exercise") %>%
-        mutate(pct = ifelse(is.na(pct), 0, pct))
+        mutate(pct = ifelse(is.na(pct), 0, pct)) %>% arrange(exercise)
       progress_msgs <- apply(progress_breakdown, 1, function(row) {
         taskItem(value = row[["pct"]],
                  color = getPctColor(row[["pct"]]),
@@ -237,10 +237,10 @@ shinyServer(function(input, output, session) {
     taskItem(paste("Completed:", completed) , value = completed_pct, color = "blue")
   })
 
-  output$exerciseQuestion <- renderText({
+  output$exerciseQuestion <- renderUI({
     lectureInfo <- selectedLecture()
     if(!is.null(lectureInfo)) {
-      lectureInfo %>% filter(exercise == input$exerciseID) %>% .$prompt
+      lectureInfo %>% filter(exercise == input$exerciseID) %>% .$prompt %>% h4
     } else {
       NULL
     }
@@ -265,12 +265,28 @@ shinyServer(function(input, output, session) {
     if(!is.null(selected_exercise)){
       selected_exercise <- selected_exercise %>%
       filter(!isCorrect) %>%
-      select(command, isError, errorMsg, updatedAt)
-      selected_exercise[order(selected_exercise[[input$incorrectSort]],decreasing = TRUE), ]
+      select("Submitted Command" = command, "Error Message" = errorMsg, TimeSubmitted = updatedAt) %>% arrange(desc(TimeSubmitted))
+      # selected_exercise[order(selected_exercise[[input$incorrectSort]],decreasing = TRUE), ]
       }
 
     else NULL
   })
+
+  output$commonErrors <- renderDataTable(
+    options = list(
+      lengthChange=FALSE, pageLength = 20,
+      searching = FALSE,
+      ordering = FALSE),{
+        selected_exercise <- selectedExercise()
+        if(!is.null(selected_exercise)){
+          selected_exercise <- selected_exercise %>%
+            filter(!isCorrect, isError) %>%
+            select(ErrorMessage = errorMsg) %>%
+            count(ErrorMessage) %>% arrange(desc(n))
+        }
+
+        else NULL
+      })
 
   output$plotFreqAttempts <- renderPlot({
     exercise_data <- selectedExercise()
@@ -313,8 +329,7 @@ shinyServer(function(input, output, session) {
         count(exercise,attempts=n) %>%
         ggplot(aes(x = as.numeric(attempts), y = n, fill = as.numeric(attempts))) +
         geom_bar(stat = "identity", position = "dodge") + facet_wrap(~ exercise) +
-        theme_bw() +
-        scale_x_discrete() +
+        theme_light() +
         scale_y_discrete() +
         xlab("Attempts") + ylab("Frequency") +
         guides(fill = FALSE)
