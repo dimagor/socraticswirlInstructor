@@ -57,8 +57,8 @@ body <- dashboardBody(
                      # Exercise Info
                      tabBox(width = NULL,
                      tabPanel(title = "Exercise Prompt",
-                         verbatimTextOutput("exerciseQuestion")),
-                     tabPanel(width = NULL, title = "Correct Answer",
+                         uiOutput("exerciseQuestion")),
+                     tabPanel(title = "Correct Answer",
                         verbatimTextOutput("exerciseAnswer"), collapsible = TRUE)
                      ),
 

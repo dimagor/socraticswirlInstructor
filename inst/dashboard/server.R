@@ -231,10 +231,10 @@ shinyServer(function(input, output, session) {
     taskItem(paste("Completed:", completed) , value = completed_pct, color = "blue")
   })
 
-  output$exerciseQuestion <- renderText({
+  output$exerciseQuestion <- renderUI({
     lectureInfo <- selectedLecture()
     if(!is.null(lectureInfo)) {
-      lectureInfo %>% filter(exercise == input$exerciseID) %>% .$prompt
+      lectureInfo %>% filter(exercise == input$exerciseID) %>% .$prompt %>% h4
     } else {
       NULL
     }
