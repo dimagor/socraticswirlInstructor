@@ -4,6 +4,9 @@ library(tidyr)
 library(ggplot2)
 library(rparse)
 
+options(socratic_swirl_instructor = "demo")
+Sys.setenv(PARSE_APPLICATION_ID = "C0pM75Sepnt5WhK6P6yhRA0TqVa6Xa3vqwZjpLfT",
+           PARSE_API_KEY = "HyXS1gEn6gf7gibjDJVWPYsnIoc0SXcp4mwohdmI")
 
 # remove list columns from a table
 remove_df_columns <- function(tbl) {
