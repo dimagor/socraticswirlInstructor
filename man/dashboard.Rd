@@ -6,6 +6,9 @@
 \usage{
 dashboard(demo = FALSE)
 }
+\arguments{
+\item{demo}{whether to launch a version with demo data}
+}
 \description{
 Opens the SocraticSwirl instructor dashboard in a browser.
 }

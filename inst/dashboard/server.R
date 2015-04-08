@@ -286,8 +286,8 @@ shinyServer(function(input, output, session) {
     if(!is.null(exercise_tt)){
       ggplot(exercise_tt,aes(time,pct, color = metric)) +
       geom_path(cex=2) + ylim(0,100) +
-      #10 minutes since first attempt or greater
-      xlim(min(exercise_tt$time),max(min(exercise_tt$time) + 600, max(exercise_tt$time))) +
+      #2 minutes since first attempt or greater
+      xlim(min(exercise_tt$time),max(min(exercise_tt$time) + 120, max(exercise_tt$time))) +
       ylab("% of Students") + xlab("") +
       scale_color_discrete(name = "" ,labels = c("Attempted", "Completed")) +
       theme_classic() +
