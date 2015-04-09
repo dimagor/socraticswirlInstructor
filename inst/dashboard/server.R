@@ -120,7 +120,7 @@ shinyServer(function(input, output, session) {
         filter((metric == "attempted" & type == "first") |
                  metric == "answered" & type == "last",
                value > 0) %>%
-        mutate(pct = value / users_logged * 100) %>%
+        mutate(pct = (value / users_logged) * 100) %>%
         arrange(time, pct)
     }
     else NULL
@@ -150,7 +150,8 @@ shinyServer(function(input, output, session) {
         group_by(exercise) %>%
         distinct(student, exercise, isCorrect) %>%
         summarise(n = sum(isCorrect)) %>%
-        mutate(pct = n / users_logged * 100)
+        mutate(pct = n / users_logged * 100) %>%
+        mutate(pct = ifelse(pct > 100,100,pct))
       progress_breakdown <- left_join(lectureInfo,progress_breakdown, by="exercise") %>%
         mutate(pct = ifelse(is.na(pct), 0, pct)) %>% arrange(exercise)
       progress_msgs <- apply(progress_breakdown, 1, function(row) {
@@ -214,6 +215,7 @@ shinyServer(function(input, output, session) {
     if(!is.null(selected_exercise)){
       attempted = selected_exercise %>% distinct(student) %>% nrow
       attempted_pct = round(attempted/usersLogged() * 100)
+      if (attempted_pct > 100) attempted_pct = 100 #Temp fix
     }
     else{
       attempted = 0
@@ -228,6 +230,7 @@ shinyServer(function(input, output, session) {
     if(!is.null(selected_exercise)){
       completed = selectedExercise() %>% filter(isCorrect) %>% distinct(student) %>% nrow
       completed_pct = round(completed/usersLogged() * 100)
+      if (completed_pct > 100) completed_pct = 100 #Temp fix
     }
     else {
       completed = 0
