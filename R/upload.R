@@ -79,9 +79,12 @@ upload_course <- function(directory) {
   }
   parse_save(full_batched, "Exercise")
 
+  # Fixes issue of full lesson paths uploaded to zip
+  wd <- getwd()
+  setwd(dirname(directory)) #Go to top level directory
   # zip the file, suppressing output
   outzip <- ".forupload.zip"
-  zip(outzip, directory, extras = "-q")
+  zip(zipfile = outzip, basename(directory), extras = "-q")
 
   # upload the file, and delete temporary one
   f <- parse_file(paste0(course_name, ".zip"), outzip)
@@ -100,6 +103,9 @@ upload_course <- function(directory) {
     parse_save(co)
   }
   unlink(outzip)
+
+  # Return to the original directory
+  setwd(wd)
 
   invisible()
 }
