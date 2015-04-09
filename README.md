@@ -31,6 +31,44 @@ This will show your students' progress and answering activity in real time. To v
 
     dashboard(demo = TRUE)
 
-### Uploading
+### Creating Exercises
 
-For information about uploading courses to the Socratic Swirl application, see the [vignette](vignettes/uploading_courses.Rmd).
+Exercises are created in SocraticSwirl the same way they are created for Swirl. [Here](http://swirlstats.com/instructors.html) you can read in detail about creating interactive exercises using the "swirlify" tool. In short, quiz questions are structured as [YAML](http://en.wikipedia.org/wiki/YAML) files, in a form something like this:
+
+    - Class: cmd_question
+      Output: Now store the contents of the 'cars$mpgCity' in a new variable called 'myMPG'.
+      CorrectAnswer: myMPG <- cars$mpgCity
+      AnswerTests: newcmd=myMPG <- cars$mpgCity
+      Hint: Use the assignment operator to assign 'cars$mpgCity' to a new variable called
+        'myMPG'.
+
+Alternatively you could write a multiple choice question:
+
+    - Class: mult_question
+      Output: Mean, median, and mode are all measures of ____________.
+      AnswerChoices: variation; significance; deviation; central tendency
+      CorrectAnswer: central tendency
+      AnswerTests: word=central tendency
+      Hint: This is a fancy term for the "middle" of a dataset.
+
+**Note**: in regular Swirl, questions are usually interspersed with text paragraphs and demonstrations. This is probably not the right approach for a set of SocraticSwirl exercises, since your students will be taking them in your class. Instead, make each of your items a question (either multiple choice or command-based).
+
+### Uploading your exercises
+
+Now you've created one or more lessons in your course, which you put into a directory called `my_course`. Suppose it has one lesson in it, called `my_lesson`. Time to upload it!
+
+``` r
+upload_course("my_course")
+```
+
+Your students can then install and take your lesson with the following line of code. *Make sure* they include the instructor username in the function, which allows you to view the results.
+
+``` r
+socratic_swirl("my_lesson", "my_course", instructor = "your_username")
+```
+
+Then to view the results in real-time, simply run the dashboard and select that course:
+
+``` r
+dashboard()
+```
