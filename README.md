@@ -8,7 +8,7 @@ Socratic Swirl lets instructors of the R programming language offer in-class, in
 Use the [devtools](https://github.com/hadley/devtools) package to install:
 
     devtools::install_github(c("rstudio/shinydashboard", "dgrtwo/rparse",
-                               "dimaoo7/socraticswirl-instructor"))
+                               "dimagor/socraticswirlInstructor"))
 
 In order to use the dashboard or upload courses, you'll need an instructor
 account with us. You can create one within R:
