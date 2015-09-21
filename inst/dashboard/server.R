@@ -3,22 +3,19 @@ library(shinydashboard)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-library(rparse)
-#library('rparse',lib.loc='/home/augustin/R/x86_64-redhat-linux-gnu-library/3.1',character.only=TRUE)
+#library(rparse)
+library('rparse',lib.loc='/home/augustin/R/x86_64-redhat-linux-gnu-library/3.1',character.only=TRUE)
 library(socraticswirlInstructor)
 
-keys='file'
-path="./keys.R.prod"  # production keys are in separate file (interactive version)
-path="/web/shiny-server/socraticswirlInstructor/inst/dashboard/keys.R"  # production keys are in separate file (server version)
-if (keys=='file') {
-   options(socratic_swirl_instructor = "mcahn")
-   source(path)
-
-} else {
-#Sys.setenv(PARSE_APPLICATION_ID = "TEST-KEY", PARSE_API_KEY = "TEST-KEY")
-#Sys.setenv(PARSE_APPLICATION_ID = "PROD-KEY", PARSE_API_KEY = "PROD-KEY")
-#parse_login("INSTRUCTOR-NAME","INSTRUCTOR-PASSWORD")
-}
+#
+# format of key file is
+# Sys.setenv(PARSE_APPLICATION_ID = "<APP ID>", PARSE_API_KEY = "<API Key>"
+# parse_login("<INSTRUCTOR NAME>","<INSTRUCTOR PASSWORD>")
+# where <...> is replaced by the actual value.
+#
+path="./keys.R"  # read keys from file in same directory as server.R script 
+options(socratic_swirl_instructor = "mcahn")
+source(path)
 
 # remove list columns from a table
 remove_df_columns <- function(tbl) {
@@ -242,8 +239,18 @@ shinyServer(function(input, output, session) {
 
   # Hubert's functions ----------------
 
+queryAllStudentResponses <- function() {
+  sList <- unique(parse_query('StudentList')$email)
+  sRes <- parse_query('StudentResponse', student = sList[1])
+  for (i in 2:length(sList)) {
+    # print(dim(sRes))
+    sRes = rbindx(sRes, parse_query('StudentResponse', student = sList[i] ), "ACL")
+  }
+  return(sRes %>% remove_df_columns())
+} 
+
 allResponses <- reactive( {
-	studentResponses0 <- queryAll("StudentResponse") %>% remove_df_columns()
+	studentResponses0 <- queryAllStudentResponses()
 	studentResponses0$lesson <- toupper(studentResponses0$lesson)
 	students <- allStudents()
 	studentResponses <- merge(studentResponses0, students, by.x="student", by.y="email")
