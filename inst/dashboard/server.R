@@ -3,25 +3,19 @@ library(shinydashboard)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-library(rparse)
+#library(rparse)
+library('rparse',lib.loc='/home/augustin/R/x86_64-redhat-linux-gnu-library/3.1',character.only=TRUE)
 library(socraticswirlInstructor)
 
-if (TRUE) {
-
-  # before deploying to shinyapps, set to TRUE. Better way?
-
-#  options(socratic_swirl_instructor = "demo")
-
-#  Sys.setenv(PARSE_APPLICATION_ID = "C0pM75Sepnt5WhK6P6yhRA0TqVa6Xa3vqwZjpLfT",
-#             PARSE_API_KEY = "HyXS1gEn6gf7gibjDJVWPYsnIoc0SXcp4mwohdmI")
-
+#
+# format of key file is
+# Sys.setenv(PARSE_APPLICATION_ID = "<APP ID>", PARSE_API_KEY = "<API Key>"
+# parse_login("<INSTRUCTOR NAME>","<INSTRUCTOR PASSWORD>")
+# where <...> is replaced by the actual value.
+#
+path="./keys.R"  # read keys from file in same directory as server.R script 
 options(socratic_swirl_instructor = "mcahn")
-Sys.setenv(PARSE_APPLICATION_ID = "TEST-KEY", PARSE_API_KEY = "TEST-KEY")
-#Sys.setenv(PARSE_APPLICATION_ID = "PROD-KEY", PARSE_API_KEY = "PROD-KEY")
-Sys.setenv(TZ = "America/New York")
-parse_login("INSTRUCTOR-NAME","INSTRUCTOR-PASSWORD")
-
-}
+source(path)
 
 # remove list columns from a table
 remove_df_columns <- function(tbl) {
@@ -35,6 +29,25 @@ remove_df_columns <- function(tbl) {
   tbl
 }
 
+xcol<-function(x,tag) {names(x)[names(x)!=tag]}
+rbindx<-function(a,b,tag) {rbind(a[,xcol(a,tag)],b[,xcol(b,tag)])}
+
+queryAll<-function(objName,...) {
+  sum<-parse_query(objName,...)
+  skipcount<-1000
+  if (is.null(sum)) {NULL}
+  else {
+    repeat{
+      part<-parse_query(objName,skip=skipcount,...)
+      if (is.null(part)) {break}
+      else {
+        sum<-rbindx(sum,part,"ACL")
+        skipcount <- skipcount+1000
+      }
+    }
+  }
+  sum
+}
 
 shinyServer(function(input, output, session) {
   current_course <- NULL
@@ -61,10 +74,9 @@ shinyServer(function(input, output, session) {
     current_precept <<- input$preceptID
 
     input$refresh #Refresh when button is clicked
-    interval <- max(as.numeric(input$interval), 5)
+    interval <- max(as.numeric(input$interval), 600)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-#    active_courses = parse_query("StudentSession", instructor = instructor) %>% remove_df_columns()
-    active_courses = parse_query("Exercise",instructor=instructor) %>% remove_df_columns()
+    active_courses = queryAll("Exercise",instructor=instructor) %>% remove_df_columns()
     if (length(active_courses)>0) {
       active_courses %>% select(course, lesson) %>% distinct
     } else {
@@ -72,8 +84,19 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  selectedLecture <- reactive({
+  selectedLectureAll <- reactive({
     selected_lecture <- parse_query("Exercise", course = input$courseID, lesson = input$lessonID) %>% remove_df_columns()
+    # selected_lecture <- studentResponses() %>% remove_df_columns()
+    if(length(selected_lecture)>0) {
+      selected_lecture
+    } else {
+      NULL
+    }
+  })
+
+  selectedLectureAttempted <- reactive({
+    # selected_lecture <- parse_query("Exercise", course = input$courseID, lesson = input$lessonID) %>% remove_df_columns()
+    selected_lecture <- studentResponses() %>% remove_df_columns()
     if(length(selected_lecture)>0) {
       selected_lecture
     } else {
@@ -82,7 +105,7 @@ shinyServer(function(input, output, session) {
   })
 
   selectedPrecept <- reactive({
-	selected_precept <- parse_query("StudentList") %>%
+	selected_precept <- queryAll("StudentList") %>%
 	remove_df_columns()
 	if (length(selected_precept)>0) {
 	selected_precept
@@ -93,20 +116,20 @@ shinyServer(function(input, output, session) {
 
 # make a student list
   studentList <- reactive({
-	student_list <- parse_query("StudentResponse", course = input$courseID) %>%
+	student_list <- queryAll("StudentResponse", course = input$courseID) %>%
 	remove_df_columns() %>%
-	distinct(student) 
+	distinct(student)
 	if (length(student_list)>0) {
 	   student_list }
-	else 
+	else
 	 { NULL }
 })
 
 # list the StudentList object
   studentList2 <- reactive({
-	student_list2<-parse_query("StudentList") %>%
+	student_list2<-queryAll("StudentList") %>%
 	remove_df_columns() %>%
-	distinct(email) 
+	distinct(email)
 	if (input$preceptID == "All") {
    		if (length(student_list2) > 0)  {
 		student_list2 }
@@ -117,42 +140,58 @@ shinyServer(function(input, output, session) {
 })
 
   usersLogged <- reactive({
-    input$refresh #Refresh when button is clicked	
-    interval <- max(as.numeric(input$interval), 5)
-    if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    users_logged <- parse_query("StudentSession", course = input$courseID, lesson = input$lessonID, instructor = instructor) %>% remove_df_columns()
-    if(length(users_logged) > 0) users_logged %>% .$student %>% unique %>% length
-    else NULL
+    students = allStudents()
+    if (!is.null(input$preceptID)) {
+        if (input$preceptID == "All") {
+            length(students$email)
+        } else {
+            sum(students$precept == input$preceptID)
+        }
+    } else {
+        length(students$email)
+    }
   })
 
   studentResponses <- reactive({
     input$refresh
-    interval <- max(as.numeric(input$interval), 5)
-    if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    student_responses <- parse_query("StudentResponse",
-                                        course = input$courseID,
-                                        lesson = input$lessonID,
-                                        instructor = instructor) %>%
-      remove_df_columns()
-	student_list <- parse_query("StudentList") %>% 
-	remove_df_columns()
-	if (length(student_responses>0) & length(student_list)>0 ) {
-	merged_df <- merge(student_responses, student_list, by.x="student", by.y="email")
+    interval <- max(as.numeric(input$interval), 600)
+    if (input$interval != FALSE) invalidateLater(interval * 1000, session)
+    student_responses <- queryAll("StudentResponse",
+                                       course = input$courseID,
+                                       lesson = input$lessonID,
+                                       instructor = instructor) %>% remove_df_columns()
+    if (length(student_responses) > 0) {
+       student_responses$isCorrect <- ifelse(student_responses$command=='SKIPPED',NA,student_responses$isCorrect)
+       student_responses$lesson <- toupper(student_responses$lesson)
+}
+
+    student_list <- queryAll("StudentList") %>% remove_df_columns()
+
+    if (length(student_responses) > 0 & length(student_list) > 0) {
+        merged_df <- merge(student_responses, student_list, by.x="student", by.y="email")
         names(merged_df)[names(merged_df) == 'updatedAt.x'] <- 'updatedAt'
-    if (input$preceptID == "All") {
-	    if(length(merged_df)>0) merged_df else NULL } 
-    else {
-	if (length(merged_df) > 0) {
-	    merged_df %>% filter(precept == input$preceptID) } 
-        else NULL }
-	}
-	else NULL
+        merged_df <- cbind(merged_df,paste(merged_df$first,merged_df$last))
+	colnames(merged_df)[length(names(merged_df))] <- "studentName"
+        if (is.null(input$preceptID)) {
+   NULL
+} else {
+   if (input$preceptID == "All") {
+       if (length(merged_df) > 0) {
+           merged_df
+       } else NULL
+            } else {
+       if (length(merged_df) > 0) {
+           merged_df %>% filter(precept == input$preceptID)
+       } else NULL
+            }
+}
+     } else NULL
   })
 
   lastUpdateTime <- reactive({
     usersLogged()
     Sys.time()
-  })
+   })
 
   selectedExercise <- reactive({
     student_responses <- studentResponses()
@@ -188,41 +227,49 @@ shinyServer(function(input, output, session) {
 
   studentQuestions <- reactive({
     input$refresh
-    interval <- max(as.numeric(input$interval), 5)
+    interval <- max(as.numeric(input$interval), 600)
     if(input$interval != FALSE) invalidateLater(interval * 1000, session)
-    student_questions <- parse_query("StudentQuestion",
+    student_questions <- queryAll("StudentQuestion",
                                         course = input$courseID,
                                         lesson = input$lessonID,
                                         instructor = instructor) %>%
-      remove_df_columns() 
+      remove_df_columns()
     if(length(student_questions)>0) student_questions else NULL
   })
 
   # Hubert's functions ----------------
 
-allResponses <- reactive( {
-	studentResponses0 <- parse_query("StudentResponse") %>% remove_df_columns()
-	students <- allStudents()
-#	precept <- getPrecept(studentResponses0$student, students)
+queryAllStudentResponses <- function() {
+  sList <- unique(parse_query('StudentList')$email)
+  sRes <- parse_query('StudentResponse', student = sList[1])
+  for (i in 2:length(sList)) {
+    # print(dim(sRes))
+    sRes = rbindx(sRes, parse_query('StudentResponse', student = sList[i] ), "ACL")
+  }
+  return(sRes %>% remove_df_columns())
+} 
 
+allResponses <- reactive( {
+	studentResponses0 <- queryAllStudentResponses()
+	studentResponses0$lesson <- toupper(studentResponses0$lesson)
+	students <- allStudents()
 	studentResponses <- merge(studentResponses0, students, by.x="student", by.y="email")
         names(studentResponses)[names(studentResponses) == 'updatedAt.x'] <- 'updatedAt'
-
-#	cbind(studentResponses, precept)  # Add a column of precept to the data frame of studentResponses
+	studentResponses <- cbind(studentResponses,paste(studentResponses$first,studentResponses$last))
+        colnames(studentResponses)[length(names(studentResponses))]<-"studentName"
+	studentResponses$isCorrect <- ifelse(studentResponses$command=='SKIPPED',NA,studentResponses$isCorrect)
 	if (input$preceptID == "All") {
 		studentResponses }
 	else {
 	        studentResponses %>% filter(precept==input$preceptID) }
-
-
 })
 
 allStudents <- function() {
-	students = parse_query("StudentList") %>% remove_df_columns() %>% distinct(email)
+	students = queryAll("StudentList") %>% remove_df_columns() %>% distinct(email)
 }
 
 allExercises<- function() {
-	exercises = parse_query("Exercise") %>% remove_df_columns() 
+	exercises = queryAll("Exercise") %>% remove_df_columns()
 }
 
 minuteCount <- function(aSet) {
@@ -238,43 +285,92 @@ getPrecept <- function(s, students) {
 
 successTable <- reactive ({
     res <- allResponses()
-    tapply(res$isCorrect, list(as.factor(res$student), as.factor(res$lesson)), sum)
+    res = res[!is.na(res$lesson),]
+    resTable = res[res$isCorrect == TRUE, ]
+    tapply(resTable$isCorrect, list(as.factor(resTable$student), as.factor(resTable$lesson)), length)
     })
 
 attemptTable <- reactive ({
     res <- allResponses()
+    res = res[!is.na(res$lesson),]
     tapply(res$isCorrect, list(as.factor(res$student), as.factor(res$lesson)), length)
     })
 
 timerTable <- reactive ({
     res <- allResponses()
+    res = res[!is.na(res$lesson),]
     tapply(res$updatedAt, list(as.factor(res$student), as.factor(res$lesson)), minuteCount)
+    })
+
+uniqueRatioTable <- reactive ({
+    res <- allResponses()
+    res = res[!is.na(res$lesson),]
+    round(100*uniqueSuccessTable()/uniqueAttemptTable(), digit=1)
     })
 
 ratioTable <- reactive ({
     res <- allResponses()
+    res = res[!is.na(res$lesson),]
     round(100*successTable()/attemptTable(), digit=1)
     })
 
+uniqueCount <- function(a) {
+    return(length(unique(a)))
+    }
+
+uniqueSuccessTable <-  reactive ({
+    res <- allResponses()
+    res = res[!is.na(res$lesson),]
+    resTable = res[res$isCorrect == TRUE, ]
+    tapply(resTable$ex, list(as.factor(resTable$student), as.factor(resTable$lesson)), uniqueCount)
+    })
+
+uniqueAttemptTable <- reactive ({
+    res <- allResponses()
+    res = res[!is.na(res$lesson),]
+    tapply(res$ex, list(as.factor(res$student), as.factor(res$lesson)), uniqueCount)
+    })
+
+unfinishedTable <- reactive ({
+    atmp = uniqueAttemptTable()
+    done = uniqueSuccessTable()
+    for (i in rownames(atmp)) {
+        for (j in colnames(atmp)) {
+	    if (!is.na(atmp[i, j])) {
+	        if (is.element(i, rownames(done)) && is.element(j, colnames(done))) {
+		    if (!is.na(done[i, j])) {
+		        atmp[i, j] = atmp[i, j] - done[i, j]
+			}
+                    }
+	        }
+	    }
+	}
+    return(atmp)
+    })
+
+
 getNames <- function(s) {
-    students <- parse_query("StudentList")
+    students = queryAll("StudentList")
     names = 1:length(s)
     for (i in 1:length(s)) names[i] = paste(students$first[students$email == s[i]], students$last[students$email == s[i]])
     return(names)
     }
 
-addNames <- function(aTable, colName) {
-    name <-  getNames(rownames(aTable)) 
-    display_tab <- cbind(name, aTable)
-    colnames(display_tab)[1]<-colName
-    display_tab
+addNames <- function(aTable, d=1) {
+    names = getNames(rownames(aTable))
+    Average = apply(aTable, 2, mean, na.rm=T)
+    temp = rbind(aTable, Average)
+    Average = apply(temp, 1, mean, na.rm=T)
+    aTable = round(cbind(temp, Average), digit=d)
+    aTable = cbind(c(names, "Average"), aTable)
+    colnames(aTable)[1]<-"Student"
+    aTable
     }
-
 
   # Header --------
 
   output$progressMenu <- renderMenu({
-    lectureInfo <- selectedLecture()
+    lectureInfo <- selectedLectureAll()
     student_responses <- studentResponses()
     users_logged <- usersLogged()
     if(!is.null(student_responses) & !is.null(lectureInfo)){
@@ -318,7 +414,7 @@ addNames <- function(aTable, colName) {
   output$usersessions <- renderUI({
     users_logged <- usersLogged()
     if(is.null(users_logged)) users_logged = 0
-    h3("Sessions:", as.character(users_logged))
+    h3("Students:", as.character(users_logged))
   })
 
   output$selectPrecept <- renderUI({
@@ -346,21 +442,22 @@ addNames <- function(aTable, colName) {
 # select a student
   output$selectStudent <- renderUI({
 	studentInfo <- studentList2()
-	if(!is.null(studentInfo)) students = as.list(sort(studentInfo$email))
+#	if(!is.null(studentInfo)) students = as.list(sort(studentInfo$email))
+	if(!is.null(studentInfo)) students = as.list(sort(paste(studentInfo$first,studentInfo$last)))
 	else students = list()
 	selectInput("studentID",label=NULL, students)
 })
 #end of select student
 
   output$selectExercise <- renderUI({
-    lectureInfo <- selectedLecture()
+    lectureInfo <- selectedLectureAttempted()
     if(!is.null(lectureInfo)) exercises = as.list(sort(lectureInfo$exercise))
     else exercises = list()
     selectInput("exerciseID", label = NULL, exercises, selected = "1")
   })
 
   output$selectExercise2 <- renderUI({
-    lectureInfo <- selectedLecture()
+    lectureInfo <- selectedLectureAttempted()
     if(!is.null(lectureInfo)) exercises = as.list(sort(lectureInfo$exercise))
     else exercises = list()
     selectInput("exerciseID2", label = NULL, exercises, selected = "1")
@@ -397,7 +494,7 @@ addNames <- function(aTable, colName) {
   })
 
   output$exerciseQuestion <- renderUI({
-    lectureInfo <- selectedLecture()
+    lectureInfo <- selectedLectureAll()
     if(!is.null(lectureInfo)) {
       lectureInfo %>% filter(exercise == input$exerciseID) %>% .$prompt %>% h4
     } else {
@@ -406,7 +503,7 @@ addNames <- function(aTable, colName) {
   })
 
   output$exerciseAnswer <- renderText({
-    lectureInfo <- selectedLecture()
+    lectureInfo <- selectedLectureAll()
     if(!is.null(lectureInfo)) {
       lectureInfo %>% filter(exercise == input$exerciseID) %>% .$answer
     } else {
@@ -481,7 +578,8 @@ addNames <- function(aTable, colName) {
     all_exercise_data <- studentResponses()
     if(is.null(all_exercise_data) ) NULL
     else{
-      all_exercise_data %>% mutate(exercise=paste0("Exercise #",exercise)) %>%
+     all_exercise_data$exercise<-ifelse(all_exercise_data$exercise>=10,all_exercise_data$exercise,paste0("0",all_exercise_data$exercise))
+     all_exercise_data %>% mutate(exercise=paste0("Exercise #",exercise)) %>%
         count(exercise,student) %>%
         select(-student) %>%
         mutate(n=as.character(n)) %>%
@@ -512,12 +610,13 @@ addNames <- function(aTable, colName) {
     if (!is.null(all_answers)) {
         all_answers$updatedAt <- all_answers$updatedAt - 14400
 	all_answers %>%
-	filter(student == input$studentID) %>%
+#	filter(student == input$studentID) %>%
+	filter(paste(first,last) == input$studentID) %>%
 	arrange(updatedAt) %>%
-	select(Time = updatedAt, Lesson = lesson, Exercise = exercise, Command = command, Correct = isCorrect)  # changed for Precept - CA
+	select(Time = updatedAt, Lesson = lesson, Exercise = exercise, Command = command, Correct = isCorrect)
 	} else {
 	NULL
-	}	
+	}
 	})
 
   output$exerciseanswers <- renderDataTable({
@@ -527,10 +626,10 @@ addNames <- function(aTable, colName) {
 	all_answers %>%
 	filter(exercise == input$exerciseID2) %>%
 	arrange(updatedAt) %>%
-	select(Time = updatedAt, Student= student, Lesson = lesson,  Command = command, Correct = isCorrect)
+	select(Time = updatedAt, Student= studentName, Lesson = lesson,  Command = command, Correct = isCorrect)
 	} else {
 	NULL
-	}	
+	}
 	})
 
   output$studentlist2 <- renderDataTable({
@@ -543,20 +642,31 @@ addNames <- function(aTable, colName) {
 	NULL
 	}
 	})
-  output$ratioTab <- renderDataTable({	
-	addNames(ratioTable(),c("Student"))
+  output$unfinishedTab <- renderDataTable({
+	addNames(unfinishedTable())
 	})
+  output$uniqueSuccessTab <- renderDataTable({
+	addNames(uniqueSuccessTable())
+	})
+  output$uniqueAttemptTab <- renderDataTable({
+	addNames(uniqueAttemptTable())
+	})
+  output$ratioTab <- renderDataTable({
+  addNames(ratioTable())
+  })
+  output$uniqueRatioTab <- renderDataTable({
+  addNames(uniqueRatioTable())
+  })
   output$successTab <- renderDataTable({
-	addNames(successTable(),c("Student"))
-	})
+  addNames(successTable())
+  })
   output$attemptTab <- renderDataTable({
-	addNames(attemptTable(),c("Student"))
-	})
+  addNames(attemptTable())
+  })
   output$timerTab <- renderDataTable({
-	addNames(timerTable(),c("Student"))
+	addNames(timerTable())
 	})
 
 
 }
 )
-
