@@ -420,7 +420,7 @@ addNames <- function(aTable, d=1) {
   output$selectPrecept <- renderUI({
     invalidateLater(5000, session)
 	preceptList <- selectedPrecept()
-	plist <- unique(append(preceptList$precept,c("All"),0 ))
+	plist <- sort(unique(append(preceptList$precept,c("All"),0 )))
 	selectInput("preceptID",label="Precept:",
   	  choices=plist,
 	  selected = current_precept)
