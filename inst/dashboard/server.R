@@ -3,8 +3,7 @@ library(shinydashboard)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-#library(rparse)
-library('rparse',lib.loc='/home/augustin/R/x86_64-redhat-linux-gnu-library/3.1',character.only=TRUE)
+library(rparse)
 library(socraticswirlInstructor)
 
 #
@@ -13,7 +12,7 @@ library(socraticswirlInstructor)
 # parse_login("<INSTRUCTOR NAME>","<INSTRUCTOR PASSWORD>")
 # where <...> is replaced by the actual value.
 #
-path="./keys.R"  # read keys from file in same directory as server.R script 
+path="./keys.R"  # read keys from file in same directory as server.R script
 options(socratic_swirl_instructor = "mcahn")
 source(path)
 
@@ -39,25 +38,38 @@ remove_df_columns <- function(tbl) {
   tbl
 }
 
-xcol<-function(x,tag) {names(x)[names(x)!=tag]}
-rbindx<-function(a,b,tag) {rbind(a[,xcol(a,tag)],b[,xcol(b,tag)])}
+# support functions for parse_queryAll
 
-queryAll<-function(objName,...) {
+no_listcol <- function(df) {
+  mask<-lapply(df[1,],function(x){!is.list(x)})
+  df[,as.vector(mask,mode='logical')]
+}
+rbindx<-function(a,b) {rbind(no_listcol(a),no_listcol(b))}
+
+parse_queryAll<-function(objName,...) {
+# max skip allowed in parse API is 10000
+  skip_amt<-1000
+  skipcount<-skip_amt
   sum<-parse_query(objName,...)
-  skipcount<-1000
   if (is.null(sum)) {NULL}
-  else {
-    repeat{
-      part<-parse_query(objName,skip=skipcount,...)
-      if (is.null(part)) {break}
-      else {
-        sum<-rbindx(sum,part,"ACL")
-        skipcount <- skipcount+1000
+  else { 
+    if (nrow(sum) == skipcount) {
+      repeat{	  
+        part<-parse_query(objName,skip=skipcount,...)
+        if (is.null(part))  # no more to read 
+	  {break}
+        else {
+          sum<-rbindx(sum,part)
+          skipcount <- skipcount+skip_amt
+	if (nrow(part) < skip_amt) # no more to read
+	  {break}
+        }
       }
     }
   }
   sum
 }
+
 
 getPctColor <- function(pct) {
   typeColors = c("black","red","orange","yellow","light-blue","navy","teal","aqua","lime","olive","green")
@@ -74,33 +86,38 @@ studentFactors <- function(students) {
 # If needed we may add instructor in the query.
 #
 
-allStudents <- function() {
-  slist = queryAll("StudentList") %>% remove_df_columns() %>% distinct(email)
-  slist[slist$precept != "Dropped",]
-}
+# allStudents <- function() {
+#   parse_queryAll("StudentList") %>% remove_df_columns() %>% distinct(email)
+# }
 
-allExercises <- function() {
-  queryAll("Exercise") %>% remove_df_columns()
-}
+# allExercises <- function() {
+#   parse_queryAll("Exercise") %>% remove_df_columns()
+# }
 
-allQuestions <- function() {
-  queryAll("StudentQuestion") %>% remove_df_columns()
-}
+# allQuestions <- function() {
+#   parse_queryAll("StudentQuestion") %>% remove_df_columns()
+# }
 
 #
 # Read database per each student at a time. This solution takes longer time but will scale.
 # Note: parse.com has query limit at 1000 and 10000 records.
 #
-queryAllStudentResponses <- function() {
-  sList <- unique(allStudents()$email)
-  sRes <- queryAll('StudentResponse', student = sList[1])
-  for (i in 2:length(sList)) {
-    sRes = rbindx(sRes, queryAll('StudentResponse', student = sList[i]) %>% remove_df_columns(), "ACL")
-  }
-  sRes$isCorrect <- ifelse(sRes$command=='SKIPPED', NA, sRes$isCorrect)
-  sRes$lesson <- toupper(sRes$lesson)
-  return(sRes)
-}
+
+# queryAllStudentResponses <- function() {
+#   students <- allStudents()
+#   if (!is.null(students)) {
+#     sList <- unique(students$email)
+#     sRes <- parse_queryAll('StudentResponse', student = sList[1])
+#     for (i in 2:length(sList)) {
+#       sRes = rbindx(sRes, parse_queryAll('StudentResponse', student = sList[i]) %>% remove_df_columns() )
+#     }
+#     sRes$isCorrect <- ifelse(sRes$command=='SKIPPED', NA, sRes$isCorrect)
+#     sRes$lesson <- toupper(sRes$lesson)
+#     sRes
+#   } else {
+#     NULL
+#   }
+# }
 
 
 
@@ -108,37 +125,61 @@ shinyServer(function(input, output, session) {
   current_course <- NULL
   current_lesson <- NULL
 
-  #
-  # The variable instructor is not really used at this moment, assuming only one class per server.
-  #
-  instructor <<- getOption("socratic_swirl_instructor")
+  instructor <- getOption("socratic_swirl_instructor")
 
   #
   # Initialize the global cache to hold database query results
   #
-  cacheStudentResponses <<- queryAllStudentResponses()
-  cacheStudents <<- allStudents()
-  cacheExercises <<- allExercises()
-  cacheQuestions <<- allQuestions()
+  # cacheStudents <<- allStudents()
+  # cacheExercises <<- allExercises()
+  # cacheQuestions <<- allQuestions()
+  # cacheStudentResponses <<- parse_queryAllStudentResponses()
 
   #
   # input$refresh starts with 0, so initial updateFlag=0 accordingly
   #
-  updateFlag <<- 0
-  updateTime <<- Sys.time()
+  # updateFlag <<- 0
+  # updateTime <<- Sys.time()
 
   # Reactive Functions ---------------
 
-  updateCache <- function() {
-    if (input$refresh > updateFlag) {
-      cacheStudentResponses <<- queryAllStudentResponses()
-      cacheStudents <<- allStudents()
-      cacheExercises <<- allExercises()
-      cacheQuestions <<- allQuestions()
-      updateFlag <<- input$refresh
-      updateTime <<- Sys.time()
+  updateTime <- reactive({
+    input$refresh
+    Sys.time()
+  })
+
+  cacheQuestions <- reactive({
+    input$refresh
+    parse_queryAll("StudentQuestion") %>% remove_df_columns()
+  })
+
+  cacheExercises <- reactive({
+    input$refresh
+    parse_queryAll("Exercise") %>% remove_df_columns()
+  })
+
+  cacheStudents <- reactive({
+    input$refresh
+    slist = parse_queryAll("StudentList") %>% remove_df_columns() %>% distinct(email)
+    slist[slist$precept != "Dropped",]
+  })
+
+  cacheStudentResponses <- reactive({
+    input$refresh
+    students <- cacheStudents()
+    if (!is.null(students)) {
+      sList <- unique(students$email)
+      sRes <- parse_queryAll('StudentResponse', student = sList[1])
+      for (i in 2:length(sList)) {
+        sRes = rbindx(sRes, parse_queryAll('StudentResponse', student = sList[i]) %>% remove_df_columns() )
+      }
+      sRes$isCorrect <- ifelse(sRes$command=='SKIPPED', NA, sRes$isCorrect)
+      sRes$lesson <- toupper(sRes$lesson)
+      sRes
+    } else {
+      NULL
     }
-  }
+  })
 
   # Identify active courses
   activeCourses <- reactive({
@@ -149,10 +190,10 @@ shinyServer(function(input, output, session) {
     current_precept <<- input$preceptID
 
     input$refresh #Refresh when button is clicked
-    updateCache()
+    # updateCache()
 
-    # active_courses = queryAll("Exercise",instructor=instructor) %>% remove_df_columns()
-    active_courses = cacheExercises
+    # active_courses = parse_queryAll("Exercise",instructor=instructor) %>% remove_df_columns()
+    active_courses = cacheExercises()
 
     if (length(active_courses)>0) {
       active_courses %>% select(course, lesson) %>% distinct
@@ -170,10 +211,12 @@ shinyServer(function(input, output, session) {
         # select nothing since the courseID and lessonID are both not avaiable
         selected_lecture = NULL
       } else {
-        selected_lecture = cacheExercises[cacheExercises$lesson == input$lessonID, ]
+        selected_lecture = cacheExercises()
+        selected_lecture = selected_lecture[selected_lecture$lesson == input$lessonID, ]
       }
     } else {
-      selected_lecture = cacheExercises[cacheExercises$course == input$courseID, ]
+      selected_lecture = cacheExercises()
+      selected_lecture = selected_lecture[selected_lecture$course == input$courseID, ]
       if (!is.null(input$lessonID)) {
         selected_lecture = selected_lecture[selected_lecture$lesson == input$lessonID, ]
       }
@@ -210,8 +253,8 @@ shinyServer(function(input, output, session) {
 
   selectedPrecept <- reactive({
 
-    # selected_precept <- queryAll("StudentList") %>% remove_df_columns()
-	  selected_precept <- cacheStudents
+    # selected_precept <- parse_queryAll("StudentList") %>% remove_df_columns()
+	  selected_precept <- cacheStudents()
 
 	  # if (length(selected_precept)>0) {
 	  if (nrow(selected_precept)>0) {
@@ -224,14 +267,15 @@ shinyServer(function(input, output, session) {
 # make a student list
   studentList <- reactive({
 
-    # student_list <- queryAll("StudentResponse", course = input$courseID) %>% remove_df_columns() %>% distinct(student)
+    # student_list <- parse_queryAll("StudentResponse", course = input$courseID) %>% remove_df_columns() %>% distinct(student)
 
-    if (cacheStudentResponses != NULL) {
+    studentRes = cacheStudentResponses()
+    if (studentRes != NULL) {
       if (is.null(input$courseID)) {
         # nothing if courseID is presented
         student_list <- NULL
       } else {
-        student_list <- cacheStudentResponses[cacheStudentResponses$course == input$courseID, ] %>% distinct(student)
+        student_list <- studentRes[studentRes$course == input$courseID, ] %>% distinct(student)
       }
     } else {
       return(NULL)
@@ -247,8 +291,8 @@ shinyServer(function(input, output, session) {
 # list the StudentList object
   studentList2 <- reactive({
 
-    #student_list2<-queryAll("StudentList") %>% remove_df_columns() %>% distinct(email)
-	  student_list2 <- cacheStudents
+    #student_list2<-parse_queryAll("StudentList") %>% remove_df_columns() %>% distinct(email)
+	  student_list2 <- cacheStudents()
 
 	  if (input$preceptID == "All") {
 	    # if (length(student_list2) > 0) {}
@@ -268,8 +312,7 @@ shinyServer(function(input, output, session) {
   })
 
   usersLogged <- reactive({
-#    students = allStudents()
-    students = cacheStudents
+    students = cacheStudents()
     if (!is.null(input$preceptID)) {
         if (input$preceptID == "All") {
             length(students$email)
@@ -284,9 +327,9 @@ shinyServer(function(input, output, session) {
 
   studentResponses <- reactive({
     input$refresh
-    updateCache()
+    # updateCache()
 
-    #     student_responses <- queryAll("StudentResponse",
+    #     student_responses <- parse_queryAll("StudentResponse",
     #                                   course = input$courseID,
     #                                   lesson = input$lessonID,
     #                                   instructor = instructor) %>% remove_df_columns()
@@ -297,13 +340,13 @@ shinyServer(function(input, output, session) {
         #   student_responses = cacheStudentResponses
         student_responses = NULL
       } else {
-        student_responses = cacheStudentResponses %>% filter(lesson == input$lessonID)
+        student_responses = cacheStudentResponses() %>% filter(lesson == input$lessonID)
       }
     } else {
       if (is.null(input$lessonID)) {
-        student_responses = cacheStudentResponses %>% filter(course == input$courseID)
+        student_responses = cacheStudentResponses() %>% filter(course == input$courseID)
       } else {
-        student_responses = cacheStudentResponses %>% filter(course == input$courseID, lesson == input$lessonID)
+        student_responses = cacheStudentResponses() %>% filter(course == input$courseID, lesson == input$lessonID)
       }
     }
 
@@ -313,8 +356,8 @@ shinyServer(function(input, output, session) {
 #       student_responses$lesson <- toupper(student_responses$lesson)
 #    }
 
-    # student_list <- queryAll("StudentList") %>% remove_df_columns()
-    student_list <- cacheStudents
+    # student_list <- parse_queryAll("StudentList") %>% remove_df_columns()
+    student_list <- cacheStudents()
 
     if (is.null(student_responses)) return(NULL)
     if (is.null(student_list)) return(NULL)
@@ -382,9 +425,9 @@ shinyServer(function(input, output, session) {
 
   studentQuestions <- reactive({
     input$refresh
-    updateCache()
+    # updateCache()
 
-    # student_questions <- queryAll("StudentQuestion",
+    # student_questions <- parse_queryAll("StudentQuestion",
     #                                course = input$courseID,
     #                                lesson = input$lessonID,
     #                                instructor = instructor) %>% remove_df_columns()
@@ -393,10 +436,12 @@ shinyServer(function(input, output, session) {
       if (is.null(input$lessonID)) {
         student_questions <- NULL
       } else {
-        student_questions <- cacheQuestions[cacheQuestions$lesson == input$lessonID, ]
+        student_questions <- cacheQuestions()
+        student_questions <- student_questions[student_questions$lesson == input$lessonID, ]
       }
     } else {
-      student_questions <- cacheQuestions[cacheQuestions$course == input$courseID, ]
+      student_questions <- cacheQuestions()
+      student_questions <- student_questions[student_questions$course == input$courseID, ]
       if (!is.null(input$lessonID)) {
         student_questions <- student_questions[student_questions$lesson == input$lessonID, ]
       }
@@ -410,13 +455,12 @@ shinyServer(function(input, output, session) {
   # Hubert's functions ----------------
 
 allResponses <- reactive( {
-	# studentResponses0 <- queryAll("StudentResponse") %>% remove_df_columns()
+	# studentResponses0 <- parse_queryAll("StudentResponse") %>% remove_df_columns()
 
 
-  studentResponses0 <- cacheStudentResponses
+  studentResponses0 <- cacheStudentResponses()
 	# studentResponses0$lesson <- toupper(studentResponses0$lesson)
-	# students <- allStudents()
-	students <- cacheStudents
+	students <- cacheStudents()
 	studentResponses <- merge(studentResponses0, students, by.x="student", by.y="email")
         names(studentResponses)[names(studentResponses) == 'updatedAt.x'] <- 'updatedAt'
 	studentResponses <- cbind(studentResponses,paste(studentResponses$first,studentResponses$last))
@@ -434,10 +478,26 @@ allResponses <- reactive( {
   }
 })
 
- minuteCount <- function(aSet) {
-     inSeconds = as.numeric(as.POSIXct(aSet))
-     return(round((max(inSeconds) - min(inSeconds))/60, digits=1))
-     }
+uniqueSkipCount <- function(encodeSet) {
+  decodeSet = strsplit(encodeSet, '---')
+  cTime = Inf
+  sTime = Inf
+  for (i in decodeSet) {
+    if (i[1] == "NA") {
+      sTime = ifelse(i[2] < sTime, i[2], sTime)
+    } else {
+      if (i[1] == "TRUE") {
+        cTime = ifelse(i[2] < cTime, i[2], cTime)
+      }
+    }
+  }
+  return(sTime < cTime)
+}
+
+minuteCount <- function(aSet) {
+    inSeconds = as.numeric(as.POSIXct(aSet))
+    return(round((max(inSeconds) - min(inSeconds))/60, digits=1))
+    }
 
 getPrecept <- function(s, students) {
     precepts = 1:length(s)
@@ -493,27 +553,36 @@ uniqueAttemptTable <- reactive ({
     tapply(res$ex, list(as.factor(res$student), as.factor(res$lesson)), uniqueCount)
     })
 
+uniqueSkipTable <- reactive ({
+  res <- allResponses()
+  res = res[!is.na(res$lesson),]
+  mtx = tapply(paste(res$isCorrect, res$updatedAt, sep="---"), list(as.factor(res$student), as.factor(res$lesson), as.factor(res$ex)), uniqueSkipCount)
+  apply(mtx, c(1, 2), sum, na.rm=T)
+})
+
 unfinishedTable <- reactive ({
     atmp = uniqueAttemptTable()
     done = uniqueSuccessTable()
-    for (i in rownames(atmp)) {
-        for (j in colnames(atmp)) {
-	    if (!is.na(atmp[i, j])) {
-	        if (is.element(i, rownames(done)) && is.element(j, colnames(done))) {
-		    if (!is.na(done[i, j])) {
-		        atmp[i, j] = atmp[i, j] - done[i, j]
-			}
-                    }
-	        }
-	    }
-	}
+#    for (i in rownames(atmp)) {
+#        for (j in colnames(atmp)) {
+#	    if (!is.na(atmp[i, j])) {
+#	      if (is.element(i, rownames(done)) && is.element(j, colnames(done))) {
+#		      if (!is.na(done[i, j])) {
+#		        atmp[i, j] = atmp[i, j] - done[i, j]
+#		      }
+#	       }
+#	     }
+#	   }
+#	}
+    done = done[rownames(atmp), colnames(atmp)]
+    atmp = atmp - ifelse(is.na(done), 0, done)
     return(atmp)
     })
 
 
 getNames <- function(s) {
-    # students = queryAll("StudentList")
-    students = cacheStudents
+    # students = parse_queryAll("StudentList")
+    students = cacheStudents()
 
     names = 1:length(s)
     for (i in 1:length(s)) names[i] = paste(students$first[students$email == s[i]], students$last[students$email == s[i]])
@@ -591,17 +660,14 @@ output$selectCourse <- renderUI({
   output$selectPrecept <- renderUI({
 	preceptList <- selectedPrecept()
 	plist <- sort(unique(append(preceptList$precept,c("All"),0 )))
+  # plist = plist[plist != "Dropped"]
 	selectInput("preceptID",label="Precept:",
   	  choices=plist,
 	  selected = current_precept)
 	})
 
   output$timeSinceLastUpdate <- renderText({
-    if (input$refresh > updateFlag) {
-      paste("refreshed ", Sys.time())
-    } else {
-      paste("refreshed ", updateTime)
-    }
+    paste("refreshed ", updateTime())
   })
 
 
@@ -813,6 +879,9 @@ output$selectCourse <- renderUI({
   output$unfinishedTab <- renderDataTable({
 	addNames(unfinishedTable())
 	})
+  output$uniqueSkipTab <- renderDataTable({
+    addNames(uniqueSkipTable())
+  })
   output$uniqueSuccessTab <- renderDataTable({
 	addNames(uniqueSuccessTable())
 	})

@@ -16,26 +16,20 @@ sidebar <- dashboardSidebar(
   ),
   p(), #Fix for better separation
   hr(),
+
   box(style = "color: black;",
-      width = NULL, title = "Controls", collapsible = TRUE,
+      width = NULL, title = "Selections", collapsible = FALSE,
       uiOutput("selectCourse"),
       uiOutput("selectLesson"),
-      uiOutput("selectPrecept"),
-      selectInput("interval", label = "Refresh interval",
-                  choices = c(
-#                    "5 seconds" = 5,
-#                    "15 seconds" = 15,
-#                    "30 seconds" = 30,
-#                    "1 minute" = 50,
-                    "5 minutes" = 600,
-		    "15 minutes" = 1800,
-	            "30 minutes" = 3600
-#                    ,"Off" = FALSE
-		    ),
-                  selected = "3600"),
+      uiOutput("selectPrecept")
+  ),
 
-      uiOutput("timeSinceLastUpdate"),
-      actionButton("refresh", "Refresh now")
+  p(), #Fix for better separation
+
+  box(style = "color: black;",
+      width = NULL, title = "Data Update", collapsible = TRUE,
+      actionButton("refresh", "Refresh Now"),
+      uiOutput("timeSinceLastUpdate")
   )
 )
 
@@ -115,6 +109,8 @@ body <- dashboardBody(
 	          ,dataTableOutput("uniqueRatioTab") )
 	,tabPanel(title = "Incomplete Attempt"
 	          ,dataTableOutput("unfinishedTab") )
+	,tabPanel(title = "Unique Skip"
+	          ,dataTableOutput("uniqueSkipTab") )
 	,tabPanel(title = "Total Time"
 	        ,dataTableOutput("timerTab") )
 	,tabPanel(title = "Attempt Counts"
