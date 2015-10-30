@@ -6,15 +6,16 @@ library(ggplot2)
 library(rparse)
 library(socraticswirlInstructor)
 
-#
-# format of key file is
-# Sys.setenv(PARSE_APPLICATION_ID = "<APP ID>", PARSE_API_KEY = "<API Key>"
-# parse_login("<INSTRUCTOR NAME>","<INSTRUCTOR PASSWORD>")
-# where <...> is replaced by the actual value.
-#
-path="./keys.R"  # read keys from file in same directory as server.R script
-options(socratic_swirl_instructor = "mcahn")
-source(path)
+username="default"
+password="default"
+
+path="./keys.R"  # read keys and set instructor and password
+source(path,local=TRUE)
+
+parse_login(username,password)
+u <- parse_current_user()
+options(socratic_swirl_instructor = u$username)
+
 
 #
 # To get rid of the following warning message

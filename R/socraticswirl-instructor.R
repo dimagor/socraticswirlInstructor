@@ -26,17 +26,15 @@ socratic_swirl_signup <- function(username, password, email) {
 #' @param password account password
 #'
 #' @export
-socratic_swirl_instructor <- function(username, password, instance = "prod") {
+socratic_swirl_instructor <- function(username = "default", password = "default", instance = "prod") {
     
   # For the instructor code for uploading courses, the keys are set here.
   # For the dashboard running on the server, they are set in server.R.
-  if (instance == "test") {
-      Sys.setenv(PARSE_APPLICATION_ID = "TEST-KEY",
-                 PARSE_API_KEY = "TEST-KEY")
-  } else {
-      Sys.setenv(PARSE_APPLICATION_ID = "PROD-KEY",
-                 PARSE_API_KEY = "PROD-KEY")
-  }
+  # Both programs read the same key files.
+
+  path = paste0("./keys-",instance,".R") # read keys from file in same directory as server.R script 
+
+  source(path,local=TRUE) # username and password are set in key file
 
   parse_login(username, password)
   u <- parse_current_user()
