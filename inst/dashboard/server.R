@@ -877,32 +877,32 @@ output$selectCourse <- renderUI({
 	NULL
 	}
 	})
-  output$unfinishedTab <- renderDataTable({
-	addNames(unfinishedTable())
+  output$unfinishedTab <- renderDataTable(options = list(scrollX = TRUE), 
+  { addNames(unfinishedTable())
 	})
-  output$uniqueSkipTab <- renderDataTable({
-    addNames(uniqueSkipTable())
+  output$uniqueSkipTab <- renderDataTable(options = list(scrollX = TRUE), 
+  {  addNames(uniqueSkipTable())
   })
-  output$uniqueSuccessTab <- renderDataTable({
-	addNames(uniqueSuccessTable())
+  output$uniqueSuccessTab <- renderDataTable(options = list(scrollX = TRUE), 
+  { addNames(uniqueSuccessTable())
 	})
-  output$uniqueAttemptTab <- renderDataTable({
-	addNames(uniqueAttemptTable())
+  output$uniqueAttemptTab <- renderDataTable(options = list(scrollX = TRUE), 
+  { addNames(uniqueAttemptTable())
 	})
-  output$ratioTab <- renderDataTable({
-  addNames(ratioTable())
+  output$ratioTab <- renderDataTable(options = list(scrollX = TRUE), 
+  { addNames(ratioTable())
   })
-  output$uniqueRatioTab <- renderDataTable({
-  addNames(uniqueRatioTable())
+  output$uniqueRatioTab <- renderDataTable(options = list(scrollX = TRUE), 
+  { addNames(uniqueRatioTable())
   })
-  output$successTab <- renderDataTable({
-  addNames(successTable())
+  output$successTab <- renderDataTable(options = list(scrollX = TRUE), 
+  { addNames(successTable())
   })
-  output$attemptTab <- renderDataTable({
-  addNames(attemptTable())
+  output$attemptTab <- renderDataTable(options = list(scrollX = TRUE), 
+  { addNames(attemptTable())
   })
-  output$timerTab <- renderDataTable({
-	addNames(timerTable())
+  output$timerTab <- renderDataTable(options = list(scrollX = TRUE),
+  { addNames(timerTable())
 	})
 
 
