@@ -26,7 +26,16 @@ socratic_swirl_signup <- function(username, password, email) {
 #' @param password account password
 #'
 #' @export
-socratic_swirl_instructor <- function(username, password) {
+socratic_swirl_instructor <- function(username = "default", password = "default", instance = "prod") {
+    
+  # For the instructor code for uploading courses, the keys are set here.
+  # For the dashboard running on the server, they are set in server.R.
+  # Both programs read the same key files.
+
+  path = paste0("./keys-",instance,".R") # read keys from file in same directory as server.R script 
+
+  source(path,local=TRUE) # username and password are set in key file
+
   parse_login(username, password)
   u <- parse_current_user()
   options(socratic_swirl_instructor = u$username)
@@ -58,5 +67,5 @@ dashboard <- function(demo = FALSE) {
   }
 
   app <- system.file("dashboard", package = "socraticswirlInstructor")
-  shiny::runApp(app, launch.browser = TRUE)
+  shiny::runApp(app, host="128.112.102.51", port=8080, launch.browser = TRUE)
 }

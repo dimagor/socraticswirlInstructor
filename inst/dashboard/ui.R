@@ -10,25 +10,26 @@ sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem("Exercise Dashboard", tabName = "exercise_tab", icon = icon("dashboard")),
     menuItem("Lesson Overview", tabName = "overview_tab", icon = icon("list")),
-    menuItem("Submitted Questions", tabName = "questions_tab", icon = icon("question-circle"))
+    menuItem("Submitted Questions", tabName = "questions_tab", icon = icon("question-circle")),
+    menuItem("Student Dashboard",tabName = "success_tab", icon=icon("list")),
+    menuItem("Response Details",tabName = "details_tab", icon = icon("list"))
   ),
   p(), #Fix for better separation
   hr(),
+
   box(style = "color: black;",
-      width = NULL, title = "Controls", collapsible = TRUE,
+      width = NULL, title = "Selections", collapsible = FALSE,
       uiOutput("selectCourse"),
       uiOutput("selectLesson"),
-      selectInput("interval", label = "Refresh interval",
-                  choices = c(
-                    "5 seconds" = 5,
-                    "15 seconds" = 15,
-                    "30 seconds" = 30,
-                    "1 minute" = 50,
-                    "5 minutes" = 600,
-                    "Off" = FALSE),
-                  selected = "30"),
-      uiOutput("timeSinceLastUpdate"),
-      actionButton("refresh", "Refresh now")
+      uiOutput("selectPrecept")
+  ),
+
+  p(), #Fix for better separation
+
+  box(style = "color: black;",
+      width = NULL, title = "Data Update", collapsible = TRUE,
+      actionButton("refresh", "Refresh Now"),
+      uiOutput("timeSinceLastUpdate")
   )
 )
 
@@ -86,8 +87,40 @@ body <- dashboardBody(
             box(width = NULL,
                 dataTableOutput("questionsasked")
                 )
+	),
+
+    tabItem(tabName = "details_tab",
+	tabBox(width = NULL
+	,tabPanel(title = "Select Exercise"
+		,uiOutput("selectExercise2")
+		,dataTableOutput("exerciseanswers") )
+	,tabPanel(title = "Select Student"
+	   	,uiOutput("selectStudent")
+   	    	,dataTableOutput("studentanswers") )
+	)),
+
+    tabItem(tabName = "success_tab",
+	tabBox(width = NULL
+	,tabPanel(title = "Unique Attempt"
+	        ,dataTableOutput("uniqueAttemptTab") )
+	,tabPanel(title = "Unique Success"
+		      ,dataTableOutput("uniqueSuccessTab") )
+	,tabPanel(title = "Success Ratio"
+	          ,dataTableOutput("uniqueRatioTab") )
+	,tabPanel(title = "Incomplete Attempt"
+	          ,dataTableOutput("unfinishedTab") )
+	,tabPanel(title = "Unique Skip"
+	          ,dataTableOutput("uniqueSkipTab") )
+	,tabPanel(title = "Total Time"
+	        ,dataTableOutput("timerTab") )
+	,tabPanel(title = "Attempt Counts"
+	          ,dataTableOutput("attemptTab") )
+	,tabPanel(title = "Success Counts"
+	          ,dataTableOutput("successTab") )
+	,tabPanel(title = "Overall Success Ratio"
+	          ,dataTableOutput("ratioTab") )
+	))
     )
-  )
 )
 
 dashboardPage(header,  sidebar,  body, skin = "blue")
