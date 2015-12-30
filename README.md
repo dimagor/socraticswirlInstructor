@@ -11,20 +11,20 @@ Socraticswirl has three major components, the student software, a parse.com data
 
 Here are the main steps. For more details, please download the [Socraticswirl Manual] (https://github.com/dimagor/socraticswirlInstructor/blob/master/release/Socraticswirl.docx).
 
-#### Install SocraticswirlInstructor
+##### Install SocraticswirlInstructor
 
 Use the [devtools](https://github.com/hadley/devtools) package to install:
 
     devtools::install_github(c("rstudio/shinydashboard", "dgrtwo/rparse",
                                "dimagor/socraticswirlInstructor"))
 
-#### Create parse.com applications
+##### Create parse.com applications
 
 Register an account at parse.com for each group that will be independently using Socraticswirl.  Using that account, create two parse.com applications for each class, one for test and the other for production. Obtain Application Keys and REST API Keys for both apps.
 
 There is a web interface to manage the database at parse.com, including the student list, the uploaded courses, and etc.
 
-#### Set up Shiny servers for test and production
+##### Set up Shiny servers for test and production
 
 Set up and configurate the Shiny servers so that the dashboard applications can access the database at parse.com, and instructors can view the dashboard using browsers. The parse.com keys are needed here.
 
@@ -39,13 +39,13 @@ and want to use the dashboard or upload courses, you'll have to log in:
 
     socratic_swirl_login("your_name", "your_password")
 
-#### Software Configuration
+##### Software Configuration
 
 The keys from parse.com are needed to configurate the software at both the student side (socraticswirl) and instructor side (socraticswirlInstructor). Each student will be assigned a unique id to initiate his/her socraticswirl software (https://github.com/dimagor/socraticswirl).
 
 The Python program [uploadStudents.py] (https://github.com/dimagor/socraticswirlInstructor/blob/master/release/utility/uploadStudents.py) may be used to upload a student roster to the parse.com databases. Before the first use, you need to configurate it using the parse.com keys and application ids. 
 
-#### Load student list
+##### Load student list
 
 There are two ways to create and manage the student list. 
 
@@ -64,10 +64,14 @@ To create the database schema (the first time) and upload a student roster, type
 
 This would upload the student list for course1 into the test database.  student_roster.txt should be a tab-separated file.  (You can save a tab-separated file in Excel by saving as a csv file.  Be sure not to save the file with quoted fields.) The expected format is one line for each student, as follows:
 
-lastname <tab> firstname <tab> email <tab> precept
+    lastname <tab> firstname <tab> email <tab> precept
 
-#### Load courses when needed
+##### Load courses
 
+There are swirl courses and/or lessons available at https://github.com/kosukeimai/qss-swirl. To get the course from the GitHub:
+
+    git clone https://github.com/kosukeimai/qss
+    
 The first time you upload a course to either to the test or production server, you need to create an instructor names and passwords for the test and production respectively, as mentioned earlier in the Shiny server set up.
 
 After that, you may upload the courses using the instructor names and passwords as follows:
@@ -85,7 +89,6 @@ After that, you may upload the courses using the instructor names and passwords 
     upload_course("/path/to/qss/swirl/CAUSALITY")
     upload_course("/path/to/qss/swirl/DISCOVERY")
     upload_course("/path/to/qss/swirl/PREDICTION")
-
 
 
 ### Usage
