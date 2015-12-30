@@ -3,14 +3,30 @@ Instructor dashboard for SocraticSwirl
 
 Socratic Swirl, developed on top of swirl, lets instructors of the R programming language offer in-class, interactive programming exercises that the instructors view student answers and progress in real-time. This package lets instructors manage their exercises on the Socratic Swirl application, and launch a dashboard to watch their students' progress. See a demo of the dashboard [here](https://dgrtwo.shinyapps.io/socraticswirl/)!
 
+Socraticswirl has three major components, the student software, a parse.com database, and the instructor software, i.e. the dashboard and course management utilities.
+
 ![alt text](release/img/SocraticSwirlFlowChart.png)
 
 ### Installation and setup
+
+Here are the main steps. For more details, please download the [Socraticswirl Manual] (https://github.com/dimagor/socraticswirlInstructor/blob/master/release/Socraticswirl.docx).
+
+#### Install SocraticswirlInstructor
 
 Use the [devtools](https://github.com/hadley/devtools) package to install:
 
     devtools::install_github(c("rstudio/shinydashboard", "dgrtwo/rparse",
                                "dimagor/socraticswirlInstructor"))
+
+#### Create parse.com applications
+
+Register an account at parse.com for each group that will be independently using Socraticswirl.  Using that account, create two parse.com applications for each class, one for test and the other for production. Obtain Application Keys and REST API Keys for both apps.
+
+There is a web interface to manage the database at parse.com, including the student list, the uploaded courses, and etc.
+
+#### Set up Shiny servers for test and production
+
+Set up and configurate the Shiny servers so that the dashboard applications can access the database at parse.com, and instructors can view the dashboard using browsers. The parse.com keys are needed here.
 
 In order to use the dashboard or upload courses, you'll need an instructor
 account with us. You can create one within R:
@@ -23,15 +39,62 @@ and want to use the dashboard or upload courses, you'll have to log in:
 
     socratic_swirl_login("your_name", "your_password")
 
+#### Software Configuration
+
+The keys from parse.com are needed to configurate the software at both the student side (socraticswirl) and instructor side (socraticswirlInstructor). Each student will be assigned a unique id to initiate his/her socraticswirl software (https://github.com/dimagor/socraticswirl).
+
+The Python program [uploadStudents.py] (https://github.com/dimagor/socraticswirlInstructor/blob/master/release/utility/uploadStudents.py) may be used to upload a student roster to the parse.com databases. Before the first use, you need to configurate it using the parse.com keys and application ids. 
+
+#### Load student list
+
+There are two ways to create and manage the student list. 
+
+    * The web interfact at parse.com
+    * The utility Python function upLoadStudents.py
+
+The upLoadStudents.py program is set up for two courses, referred to as “course1” and “course2”, and each has a test and a production database.  You need only use one of these.
+
+To view the help text, use the “-h” flag:
+
+    uploadStudents.py –h
+
+To create the database schema (the first time) and upload a student roster, type the following:
+
+    uploadStudents.py –create –filename student_roster.txt –add –n course1 –i test
+
+This would upload the student list for course1 into the test database.  student_roster.txt should be a tab-separated file.  (You can save a tab-separated file in Excel by saving as a csv file.  Be sure not to save the file with quoted fields.) The expected format is one line for each student, as follows:
+
+lastname <tab> firstname <tab> email <tab> precept
+
+#### Load courses when needed
+
+The first time you upload a course to either to the test or production server, you need to create an instructor names and passwords for the test and production respectively, as mentioned earlier in the Shiny server set up.
+
+After that, you may upload the courses using the instructor names and passwords as follows:
+
+    library(socraticswirlInstructor)
+
+    # For the test instance:
+    socratic_swirl_instructor("<instructor name>", "instructor password", instance="test")
+
+    # or, for the production instance:
+    socratic_swirl_instructor("<instructor name>", "instructor password")
+
+    upload_course("/path/to/qss/swirl/INTRO")
+    upload_course("/path/to/qss/swirl/MEASUREMENT")
+    upload_course("/path/to/qss/swirl/CAUSALITY")
+    upload_course("/path/to/qss/swirl/DISCOVERY")
+    upload_course("/path/to/qss/swirl/PREDICTION")
+
+
+
 ### Usage
 
-Once you've logged in, you can access your Socratic Swirl dashboard with:
+Once the Shiny server (s.univ.edu) runs, you can access your Socratic Swirl dashboard with any browser:
 
-    dashboard()
+    http://s.univ.edu/
 
-This will show your students' progress and answering activity in real time. To view a demo, try:
-
-    dashboard(demo = TRUE)
+We recommend that two servers are set up, one for test and the other for production. The production is used to monitor students' progress on the exercises.
 
 ### Creating Exercises
 
