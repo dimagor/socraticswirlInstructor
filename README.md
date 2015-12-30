@@ -1,7 +1,7 @@
 Instructor dashboard for SocraticSwirl
 ======================================
 
-Socratic Swirl, developed on top of swirl, lets instructors of the R programming language offer in-class, interactive programming exercises that the instructors view student answers and progress in real-time. This package lets instructors manage their exercises on the Socratic Swirl application, and launch a dashboard to watch their students' progress. See a demo of the dashboard [here](https://dgrtwo.shinyapps.io/socraticswirl/)!
+Socraticswirl, developed on top of swirl, lets instructors of the R programming language offer in-class, interactive programming exercises that the instructors view student answers and progress in real-time. This package lets instructors manage their exercises on the Socratic Swirl application, and launch a dashboard to watch their students' progress. See a demo of the dashboard [here](https://dgrtwo.shinyapps.io/socraticswirl/)!
 
 Socraticswirl has three major components, the student software, a parse.com database, and the instructor software, i.e. the dashboard and course management utilities.
 
@@ -9,7 +9,15 @@ Socraticswirl has three major components, the student software, a parse.com data
 
 ### Installation and setup
 
-Here are the main steps. For more details, please download the [Socraticswirl Manual] (https://github.com/dimagor/socraticswirlInstructor/blob/master/release/Socraticswirl.docx).
+For more details, please download the [Socraticswirl Manual] (https://github.com/dimagor/socraticswirlInstructor/blob/master/release/Socraticswirl.docx).
+
+Here are the steps:
+    * Install SocraticswirlInstructor and socraticswirl
+    * Create parse.com applications
+    * Set up Shiny servers for test and production
+    * Software Configuration
+    * Load student list
+    * Load courses
 
 ##### Install SocraticswirlInstructor
 
@@ -17,6 +25,8 @@ Use the [devtools](https://github.com/hadley/devtools) package to install:
 
     devtools::install_github(c("rstudio/shinydashboard", "dgrtwo/rparse",
                                "dimagor/socraticswirlInstructor"))
+
+The student side software is available at [socraticswirl](https://github.com/dimagor/socraticswirl). Each student should install it on his/her personal computer.
 
 ##### Create parse.com applications
 
@@ -93,7 +103,7 @@ After that, you may upload the courses using the instructor names and passwords 
 
 ### Usage
 
-Once the Shiny server (s.univ.edu) runs, you can access your Socratic Swirl dashboard with any browser:
+Once the Shiny server (s.univ.edu) runs, you can access your Socraticswirl dashboard with any browser:
 
     http://s.univ.edu/
 
