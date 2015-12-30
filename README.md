@@ -23,8 +23,9 @@ Here are the steps:
 
 Use the [devtools](https://github.com/hadley/devtools) package to install:
 
-    devtools::install_github(c("rstudio/shinydashboard", "dgrtwo/rparse",
-                               "dimagor/socraticswirlInstructor"))
+``` r
+devtools::install_github(c("rstudio/shinydashboard", "dgrtwo/rparse", "dimagor/socraticswirlInstructor"))
+```
 
 The student side software is available at [socraticswirl](https://github.com/dimagor/socraticswirl). Each student should install it on his/her personal computer.
 
@@ -41,13 +42,17 @@ Set up and configurate the Shiny servers so that the dashboard applications can 
 In order to use the dashboard or upload courses, you'll need an instructor
 account with us. You can create one within R:
 
-    library(socraticswirlInstructor)
-    socratic_swirl_signup("your_name", "your_password", "your_email")
+``` r
+library(socraticswirlInstructor)
+socratic_swirl_signup("your_name", "your_password", "your_email")
+```
 
 Once you've confirmed your email, you have an account! Each time you restart R
 and want to use the dashboard or upload courses, you'll have to log in:
 
-    socratic_swirl_login("your_name", "your_password")
+``` r
+socratic_swirl_login("your_name", "your_password")
+```
 
 ##### Software Configuration
 
@@ -77,29 +82,26 @@ This would upload the student list for course1 into the test database.  student_
     lastname <tab> firstname <tab> email <tab> precept
 
 ##### Load courses
-
-There are swirl courses and/or lessons available at https://github.com/kosukeimai/qss-swirl. To get the course from the GitHub:
-
-    git clone https://github.com/kosukeimai/qss
     
 The first time you upload a course to either to the test or production server, you need to create an instructor names and passwords for the test and production respectively, as mentioned earlier in the Shiny server set up.
 
 After that, you may upload the courses using the instructor names and passwords as follows:
 
-    library(socraticswirlInstructor)
+``` r
+library(socraticswirlInstructor)
 
-    # For the test instance:
-    socratic_swirl_instructor("<instructor name>", "instructor password", instance="test")
+# For the test instance:
+socratic_swirl_instructor("<instructor name>", "instructor password", instance="test")
 
-    # or, for the production instance:
-    socratic_swirl_instructor("<instructor name>", "instructor password")
+# or, for the production instance:
+socratic_swirl_instructor("<instructor name>", "instructor password")
 
-    upload_course("/path/to/qss/swirl/INTRO")
-    upload_course("/path/to/qss/swirl/MEASUREMENT")
-    upload_course("/path/to/qss/swirl/CAUSALITY")
-    upload_course("/path/to/qss/swirl/DISCOVERY")
-    upload_course("/path/to/qss/swirl/PREDICTION")
-
+upload_course("/path/to/qss/swirl/INTRO")
+upload_course("/path/to/qss/swirl/MEASUREMENT")
+upload_course("/path/to/qss/swirl/CAUSALITY")
+upload_course("/path/to/qss/swirl/DISCOVERY")
+upload_course("/path/to/qss/swirl/PREDICTION")
+```
 
 ### Usage
 
@@ -131,22 +133,32 @@ Alternatively you could write a multiple choice question:
 
 **Note**: in regular Swirl, questions are usually interspersed with text paragraphs and demonstrations. This is probably not the right approach for a set of SocraticSwirl exercises, since your students will be taking them in your class. Instead, make each of your items a question (either multiple choice or command-based).
 
-### Uploading your exercises
+### Available swirl courses
 
-Now you've created one or more lessons in your course, which you put into a directory called `my_course`. Suppose it has one lesson in it, called `my_lesson`. Time to upload it!
+There are swirl courses and/or lessons available at https://github.com/kosukeimai/qss-swirl. To get the course from the GitHub:
 
-``` r
-upload_course("my_course")
-```
+    git clone https://github.com/kosukeimai/qss
 
-Your students can then install and take your lesson with the following line of code. *Make sure* they include the instructor username in the function, which allows you to view the results.
+These courses are compatible for both swirl and socraticswirl.
 
-``` r
-socratic_swirl("my_lesson", "my_course", instructor = "your_username")
-```
-
-Then to view the results in real-time, simply run the dashboard and select that course:
+Here is a swirl and socraticswirl compatible lesson example  [CAUSALTY2](https://github.com/kosukeimai/qss-swirl/tree/master/CAUSALITY2), in which the udata is stored accordingly by initLesson.R:
 
 ``` r
-dashboard()
+# Code placed in this file fill be executed every time the
+# lesson is started. Any variables created here will show up in
+# the user's working directory and thus be accessible to them
+# throughout the lesson.
+
+
+# Make path to lesson directory
+lesson_dir <- file.path(path.package(substring(find("swirl")[1], 9)), "Courses",
+                        "qss-swirl", "CAUSALITY2")
+
+# Make path to data and let user call read.csv(data_path)
+data_path <- file.path(lesson_dir, "resume.csv")
+data_path2 <- file.path(lesson_dir, "social.csv")
+
+# Load data into a variable for the user
+resume <- read.csv(data_path, stringsAsFactors=FALSE)
+social <- read.csv(data_path2, stringsAsFactors=FALSE)
 ```
