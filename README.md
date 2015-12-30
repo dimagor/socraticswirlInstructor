@@ -15,9 +15,9 @@ Here are the steps:
 
     * Install SocraticswirlInstructor
     * Create parse.com applications
-    * Set up Shiny servers for test and production
+    * Set up Shiny servers, for test and production
     * Software Configuration
-    * Load student list
+    * Load the student list
     * Load courses
 
 ##### Install SocraticswirlInstructor
@@ -36,9 +36,9 @@ Register an account at parse.com for each group that will be independently using
 
 There is a web interface to manage the database at parse.com, including the student list, the uploaded courses, and etc.
 
-##### Set up Shiny servers for test and production
+##### Set up Shiny servers
 
-Set up and configurate the Shiny servers so that the dashboard applications can access the database at parse.com, and instructors can view the dashboard using browsers. The parse.com keys are needed here.
+Set up and configurate the Shiny servers so that the dashboard applications can access the database at parse.com, and instructors can view the dashboard using browsers. The parse.com keys are needed here. It is important that two Shuny servers are set up, one for test and the other for production.
 
 In order to use the dashboard or upload courses, you'll need an instructor
 account with us. You can create one within R:
@@ -82,7 +82,7 @@ This would upload the student list for course1 into the test database.  student_
 
     lastname <tab> firstname <tab> email <tab> precept
 
-##### Load the courses
+##### Load courses
     
 The first time you upload a course to either to the test or production server, you need to create an instructor names and passwords for the test and production respectively, as mentioned earlier in the Shiny server set up.
 
@@ -110,7 +110,7 @@ Once the Shiny server (s.univ.edu) runs, you can access your Socraticswirl dashb
 
     http://s.univ.edu/
 
-We recommend that two servers are set up, one for test and the other for production. The production is used to monitor students' progress on the exercises.
+We recommend that two servers are set up, one for test and the other for production. The production will be the one to monitor students' progress on the exercises for the class.
 
 ### Creating Exercises
 
