@@ -12,7 +12,8 @@ Socraticswirl has three major components, the student software, a parse.com data
 For more details, please download the [Socraticswirl Manual] (https://github.com/dimagor/socraticswirlInstructor/blob/master/release/Socraticswirl.docx).
 
 Here are the steps:
-    * Install SocraticswirlInstructor and socraticswirl
+
+    * Install SocraticswirlInstructor
     * Create parse.com applications
     * Set up Shiny servers for test and production
     * Software Configuration
@@ -27,7 +28,7 @@ Use the [devtools](https://github.com/hadley/devtools) package to install:
 devtools::install_github(c("rstudio/shinydashboard", "dgrtwo/rparse", "dimagor/socraticswirlInstructor"))
 ```
 
-The student side software is available at [socraticswirl](https://github.com/dimagor/socraticswirl). Each student should install it on his/her personal computer.
+The student side software is available at [socraticswirl](https://github.com/dimagor/socraticswirl). Students could install it on their personal computers.
 
 ##### Create parse.com applications
 
@@ -60,7 +61,7 @@ The keys from parse.com are needed to configurate the software at both the stude
 
 The Python program [uploadStudents.py] (https://github.com/dimagor/socraticswirlInstructor/blob/master/release/utility/uploadStudents.py) may be used to upload a student roster to the parse.com databases. Before the first use, you need to configurate it using the parse.com keys and application ids. 
 
-##### Load student list
+##### Load the student list
 
 There are two ways to create and manage the student list. 
 
@@ -81,7 +82,7 @@ This would upload the student list for course1 into the test database.  student_
 
     lastname <tab> firstname <tab> email <tab> precept
 
-##### Load courses
+##### Load the courses
     
 The first time you upload a course to either to the test or production server, you need to create an instructor names and passwords for the test and production respectively, as mentioned earlier in the Shiny server set up.
 
@@ -139,9 +140,7 @@ There are swirl courses and/or lessons available at https://github.com/kosukeima
 
     git clone https://github.com/kosukeimai/qss
 
-These courses are compatible for both swirl and socraticswirl.
-
-Here is a swirl and socraticswirl compatible lesson example  [CAUSALTY2](https://github.com/kosukeimai/qss-swirl/tree/master/CAUSALITY2), in which the udata is stored accordingly by initLesson.R:
+These courses are compatible for both swirl and socraticswirl. For people who are interested in making course compatible, CAUSALTY2 may be a good example where the data is stored accordingly by initLesson.R:
 
 ``` r
 # Code placed in this file fill be executed every time the
