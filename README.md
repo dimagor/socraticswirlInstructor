@@ -57,7 +57,7 @@ socratic_swirl_login("your_name", "your_password")
 
 ##### Software Configuration
 
-The keys from parse.com are needed to configurate the software at both the student side (socraticswirl) and instructor side (socraticswirlInstructor). Each student will be assigned a unique id to initiate his/her socraticswirl software (https://github.com/dimagor/socraticswirl).
+The keys from parse.com are needed to configurate the software at both the student side (socraticswirl) and instructor side (socraticswirlInstructor). Each student will be assigned a unique id to initialize his/her socraticswirl software (https://github.com/dimagor/socraticswirl).
 
 The Python program [uploadStudents.py] (https://github.com/dimagor/socraticswirlInstructor/blob/master/release/utility/uploadStudents.py) may be used to upload a student roster to the parse.com databases. Before the first use, you need to configurate it using the parse.com keys and application ids. 
 
