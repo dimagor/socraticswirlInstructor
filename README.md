@@ -86,6 +86,10 @@ This would upload the student list for course1 into the test database.  student_
     
 The first time you upload a course to either to the test or production server, you need to create an instructor names and passwords for the test and production respectively, as mentioned earlier in the Shiny server set up.
 
+To upload courses, you'll have to log in at the corresponding server:
+
+    socratic_swirl_login("your_name", "your_password")
+
 After that, you may upload the courses using the instructor names and passwords as follows:
 
 ``` r
@@ -106,7 +110,24 @@ upload_course("/path/to/qss/swirl/PREDICTION")
 
 ### Usage
 
-Once the Shiny server (s.univ.edu) runs, you can access your Socraticswirl dashboard with any browser:
+To use the dashboard, you'll have to log in:
+``` r
+socratic_swirl_login("your_name", "your_password")
+```
+
+Once you've logged in, you can access your Socratic Swirl dashboard with:
+``` r
+dashboard()
+```
+
+This will start the dashboard application on your computer to show your students' progress and answering activity in real time. 
+
+To view a demo, try:
+``` r
+dashboard(demo = TRUE)
+```
+
+To view the dashboard via web browser, you need to launch the dashboard on the Shiny server. Once the Shiny server (s.univ.edu) runs, instructors and preceptors can access your Socraticswirl dashboard at the following web address:
 
     http://s.univ.edu/
 
