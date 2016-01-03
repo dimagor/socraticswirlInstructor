@@ -16,6 +16,7 @@ Here are the steps:
     * Install SocraticswirlInstructor
     * Create parse.com applications
     * Set up Shiny servers, for test and production
+    * Instructor accounts at parse.com
     * Software Configuration
     * Load the student list
     * Load courses
@@ -40,8 +41,10 @@ There is a web interface to manage the database at parse.com, including the stud
 
 Set up and configurate the Shiny servers so that the dashboard applications can access the database at parse.com, and instructors can view the dashboard using browsers. The parse.com keys are needed here. It is important that two Shuny servers are set up, one for test and the other for production.
 
+##### Instructor accounts
+
 In order to use the dashboard or upload courses, you'll need an instructor
-account with us. You can create one within R:
+account with parse.com. You can create one within R:
 
 ``` r
 library(socraticswirlInstructor)
@@ -52,7 +55,10 @@ Once you've confirmed your email, you have an account! Each time you restart R
 and want to use the dashboard or upload courses, you'll have to log in:
 
 ``` r
-socratic_swirl_login("your_name", "your_password")
+# For the test instance:
+socratic_swirl_instructor("<instructor name>", "instructor password", instance="test")
+# or, for the production instance:
+socratic_swirl_instructor("<instructor name>", "instructor password")
 ```
 
 ##### Software Configuration
@@ -86,11 +92,7 @@ This would upload the student list for course1 into the test database.  student_
     
 The first time you upload a course to either to the test or production server, you need to create an instructor names and passwords for the test and production respectively, as mentioned earlier in the Shiny server set up.
 
-To upload courses, you'll have to log in at the corresponding server:
-
-    socratic_swirl_login("your_name", "your_password")
-
-After that, you may upload the courses using the instructor names and passwords as follows:
+To upload courses, you'll have to log in at the corresponding server. After that, you may upload the courses using the instructor names and passwords as follows:
 
 ``` r
 library(socraticswirlInstructor)
@@ -112,7 +114,10 @@ upload_course("/path/to/qss/swirl/PREDICTION")
 
 To use the dashboard, you'll have to log in:
 ``` r
-socratic_swirl_login("your_name", "your_password")
+# For the test instance:
+socratic_swirl_instructor("<instructor name>", "instructor password", instance="test")
+# or, for the production instance:
+socratic_swirl_instructor("<instructor name>", "instructor password")
 ```
 
 Once you've logged in, you can access your Socratic Swirl dashboard with:
