@@ -35,7 +35,7 @@ The student side software is available at [socraticswirl](https://github.com/dim
 
 Register an account at parse.com for each group that will be independently using Socraticswirl.  Using that account, create two parse.com applications for each class, one for test and the other for production. 
 
-Obtain Application Keys and REST API Keys for both apps. *Fill in the keys in the configuration file keys.R under the subdirectory "config"*.
+Obtain Application Keys and REST API Keys for both apps. **Fill in the keys in the configuration file keys.R under the subdirectory "config"**.
 
 There is a web interface to manage the database at parse.com, including the student list, the uploaded courses, and etc.
 
@@ -43,7 +43,7 @@ There is a web interface to manage the database at parse.com, including the stud
 
 Set up and configurate the Shiny servers so that the dashboard applications can access the database at parse.com, and instructors can view the dashboard using browsers. The parse.com keys are needed here. It is important that two Shuny servers are set up, one for test and the other for production.
 
-*Under the subdirectory "config", there is instance.R which needs to be edited manually accordingly to configure the server to be either test or production*. 
+**Under the subdirectory "config", there is instance.R which needs to be edited manually accordingly to configure the server to be either test or production**. 
 
 ##### Instructor accounts
 
@@ -122,7 +122,7 @@ upload_course("/path/to/qss/swirl/PREDICTION")
 
 ### Usage
 
-*Please make sure that the configuration file keys.R under the subdirectory "config" is updated accordingly*.
+**Please make sure that the configuration file keys.R under the subdirectory "config" is updated accordingly**.
 
 To use the dashboard, you'll have to log in:
 ``` r
@@ -144,7 +144,7 @@ To view a demo, try:
 dashboard(demo = TRUE)
 ```
 
-To view the dashboard via web browser, *please make sure that the configuration file instance.R under the subdirectory "config" is also updated accordingly*, in addition to keys.R. You need to specify if it is the test server or production server.
+To view the dashboard via web browser, **please make sure that the configuration file instance.R under the subdirectory "config" is also updated accordingly**, in addition to keys.R. You need to specify if it is the test server or production server.
 
 Then, you may launch the dashboard on the Shiny server. Once the Shiny server (s.univ.edu) runs, instructors and preceptors can access your Socraticswirl dashboard at the following web address:
 
