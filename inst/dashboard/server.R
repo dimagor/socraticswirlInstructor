@@ -6,13 +6,30 @@ library(ggplot2)
 library(rparse)
 library(socraticswirlInstructor)
 
-username="default"
-password="default"
+username = "default"
+password = "default"
+server_instance = "test"
 
-path="./keys.R"  # read keys and set instructor and password
-source(path,local=TRUE)
+#
+# Load the keys for test and production by Sys.setenv
+#
+path="./../../config/keys.R"  # read keys and set instructor and password
+source(path, local=TRUE)
+#
+# Load the server instance, i.e. test vs production
+#
+path="./../../config/instance.R"  # read keys and set instructor and password
+source(path, local=TRUE)
 
-parse_login(username,password)
+if (server_instance == "test") {
+  Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_TEST"))
+  Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_TEST"))
+} else {
+  Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_PROD"))
+  Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_PROD"))
+}
+
+parse_login(username, password)
 u <- parse_current_user()
 options(socratic_swirl_instructor = u$username)
 
@@ -53,11 +70,11 @@ parse_queryAll<-function(objName,...) {
   skipcount<-skip_amt
   sum<-parse_query(objName,...)
   if (is.null(sum)) {NULL}
-  else { 
+  else {
     if (nrow(sum) == skipcount) {
-      repeat{	  
+      repeat{
         part<-parse_query(objName,skip=skipcount,...)
-        if (is.null(part))  # no more to read 
+        if (is.null(part))  # no more to read
 	  {break}
         else {
           sum<-rbindx(sum,part)
@@ -877,28 +894,28 @@ output$selectCourse <- renderUI({
 	NULL
 	}
 	})
-  output$unfinishedTab <- renderDataTable(options = list(scrollX = TRUE), 
+  output$unfinishedTab <- renderDataTable(options = list(scrollX = TRUE),
   { addNames(unfinishedTable())
 	})
-  output$uniqueSkipTab <- renderDataTable(options = list(scrollX = TRUE), 
+  output$uniqueSkipTab <- renderDataTable(options = list(scrollX = TRUE),
   {  addNames(uniqueSkipTable())
   })
-  output$uniqueSuccessTab <- renderDataTable(options = list(scrollX = TRUE), 
+  output$uniqueSuccessTab <- renderDataTable(options = list(scrollX = TRUE),
   { addNames(uniqueSuccessTable())
 	})
-  output$uniqueAttemptTab <- renderDataTable(options = list(scrollX = TRUE), 
+  output$uniqueAttemptTab <- renderDataTable(options = list(scrollX = TRUE),
   { addNames(uniqueAttemptTable())
 	})
-  output$ratioTab <- renderDataTable(options = list(scrollX = TRUE), 
+  output$ratioTab <- renderDataTable(options = list(scrollX = TRUE),
   { addNames(ratioTable())
   })
-  output$uniqueRatioTab <- renderDataTable(options = list(scrollX = TRUE), 
+  output$uniqueRatioTab <- renderDataTable(options = list(scrollX = TRUE),
   { addNames(uniqueRatioTable())
   })
-  output$successTab <- renderDataTable(options = list(scrollX = TRUE), 
+  output$successTab <- renderDataTable(options = list(scrollX = TRUE),
   { addNames(successTable())
   })
-  output$attemptTab <- renderDataTable(options = list(scrollX = TRUE), 
+  output$attemptTab <- renderDataTable(options = list(scrollX = TRUE),
   { addNames(attemptTable())
   })
   output$timerTab <- renderDataTable(options = list(scrollX = TRUE),
