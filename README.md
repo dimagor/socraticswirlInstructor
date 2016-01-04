@@ -44,7 +44,13 @@ Set up and configurate the Shiny servers so that the dashboard applications can 
 ##### Instructor accounts
 
 In order to use the dashboard or upload courses, you'll need an instructor
-account with parse.com. You can create one within R:
+account with parse.com. You can create one within R for the test:
+
+``` r
+library(socraticswirlInstructor)
+socratic_swirl_signup("your_name", "your_password", "your_email", instance="test")
+```
+and for the production (may choose to use a different password):
 
 ``` r
 library(socraticswirlInstructor)
