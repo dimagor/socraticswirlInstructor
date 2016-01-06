@@ -30,7 +30,7 @@ socratic_swirl_signup <- function(username, password, email, instance = "prod") 
 #    Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_PROD"))
 #  }
   Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID"))
-  Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_API_KEY"))
+  Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY"))
 
   parse_signup(username, password, email = email)
   u <- parse_current_user()
@@ -67,7 +67,7 @@ socratic_swirl_instructor <- function(username, password, instance = "prod") {
 #    Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_PROD"))
 #  }
   Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID"))
-  Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_API_KEY"))
+  Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY"))
 
   parse_login(username, password)
   u <- parse_current_user()
