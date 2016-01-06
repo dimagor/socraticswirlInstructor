@@ -122,29 +122,30 @@ upload_course("/path/to/qss/swirl/PREDICTION")
 
 ### Usage
 
-**Please make sure that the configuration file keys.R under the subdirectory "config" is updated accordingly**.
+**Please make sure that the configuration files keys.R and instance.R under the subdirectory "config" is updated accordingly**.
 
-To use the dashboard, you'll have to log in:
+The dashboard application runs in the directory where server.R and ui.R are. 
+
+To use the dashboard, you may do the following:
+    * load packages socraticswirlInstructor and shiny
+    * change working directory to where server.R and ui.R are
+
+If you are using RStudio, this will start the dashboard application on your computer to show your students' progress and answering activity in real time:
 ``` r
-# For the test instance:
-socratic_swirl_instructor("<instructor name>", "instructor password", instance="test")
-# or, for the production instance:
-socratic_swirl_instructor("<instructor name>", "instructor password")
+library(socraticswirlInstructor)
+library(shiny)
+setwd(paste0(getwd(), "/inst/dashboard"))  # change to the directory where server.R and ui.R are
+runApp()
 ```
 
-Once you've logged in, you can access your Socratic Swirl dashboard with:
+If you plan to running R at the command line, please change working directory to where server.R and ui.R are. In the socraticswirlInstructor package, it is the subdirectory inst/dashboard. Once you start the R session, you may do the following
 ``` r
-dashboard()
+library(socraticswirlInstructor)
+library(shiny)
+runApp()
 ```
 
-This will start the dashboard application on your computer to show your students' progress and answering activity in real time. 
-
-To view a demo, try:
-``` r
-dashboard(demo = TRUE)
-```
-
-To view the dashboard via web browser, **please make sure that the configuration file instance.R under the subdirectory "config" is also updated accordingly**, in addition to keys.R. You need to specify if it is the test server or production server.
+To view the dashboard via web browser, **please make sure that the configuration file instance.R under the subdirectory "config" is also updated accordingly**. You need to specify clearly if it is the test server or production server.
 
 Then, you may launch the dashboard on the Shiny server. Once the Shiny server (s.univ.edu) runs, instructors and preceptors can access your Socraticswirl dashboard at the following web address:
 
