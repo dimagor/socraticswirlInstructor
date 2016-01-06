@@ -6,34 +6,6 @@ library(ggplot2)
 library(rparse)
 library(socraticswirlInstructor)
 
-username = "default"
-password = "default"
-server_instance = "test"
-
-#
-# Load the keys for test and production by Sys.setenv
-#
-path="./../../config/keys.R"  # read keys and set instructor and password
-source(path, local=TRUE)
-#
-# Load the server instance, i.e. test vs production
-#
-path="./../../config/instance.R"  # read keys and set instructor and password
-source(path, local=TRUE)
-
-if (server_instance == "test") {
-  Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_TEST"))
-  Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_TEST"))
-} else {
-  Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_PROD"))
-  Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_PROD"))
-}
-
-parse_login(username, password)
-u <- parse_current_user()
-options(socratic_swirl_instructor = u$username)
-
-
 #
 # To get rid of the following warning message
 #   shiny::renderDataTable is deprecated. Please use DT::renderDataTable instead.
@@ -41,6 +13,23 @@ options(socratic_swirl_instructor = u$username)
 #   (Last used in version 0.11.1)
 #
 options(shiny.deprecation.messages=FALSE)
+
+# Load the keys for test and production by Sys.setenv
+data(keys)
+# Load the server instance, i.e. test vs production
+data(instance)
+
+if (server_instance == "test") {
+  Sys.setenv(PARSE_APPLICATION_ID = PARSE_APPLICATION_ID_TEST)
+  Sys.setenv(PARSE_API_KEY = PARSE_API_KEY_TEST)
+} else {
+  Sys.setenv(PARSE_APPLICATION_ID = PARSE_APPLICATION_ID_PROD)
+  Sys.setenv(PARSE_API_KEY = PARSE_API_KEY_PROD)
+}
+
+parse_login(username, password)
+u <- parse_current_user()
+options(socratic_swirl_instructor = u$username)
 
 # Static Definitions ----------
 
