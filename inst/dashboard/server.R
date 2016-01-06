@@ -15,9 +15,9 @@ library(socraticswirlInstructor)
 options(shiny.deprecation.messages=FALSE)
 
 # Load the keys for test and production by Sys.setenv
-data(keys)
+data(parse_keys)
 # Load the server instance, i.e. test vs production
-data(instance)
+data(server_instance)
 
 if (server_instance == "test") {
   Sys.setenv(PARSE_APPLICATION_ID = PARSE_APPLICATION_ID_TEST)

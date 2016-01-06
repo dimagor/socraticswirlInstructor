@@ -23,7 +23,7 @@ socratic_swirl_signup <- function(username, password, email, instance = "prod") 
   # Now:
   #    Put the keys.R in the data directory, and load them this way
   #
-  data(keys)
+  data(parse_keys)
   #
   # By default, it is for production, unless instance = "test"
   #
@@ -63,7 +63,7 @@ socratic_swirl_instructor <- function(username, password, instance = "prod") {
   # Now:
   #    Put the keys.R in the data directory, and load them this way
   #
-  data(keys)
+  data(parse_keys)
   #
   # By default, it is for production, unless instance = "test"
   #
