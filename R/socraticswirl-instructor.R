@@ -17,18 +17,20 @@ socratic_swirl_signup <- function(username, password, email, instance = "prod") 
   # Now:
   #   The keys are all in key.R, and we use setenv/getenv to retrieve the correct keys
   #
-  path="./../config/keys.R"  # read keys and set instructor and password
-  source(path, local=TRUE)
+  #path="./../config/keys.R"  # read keys and set instructor and password
+  #source(path, local=TRUE)
   #
   # By default, it is for production, unless instance = "test"
   #
-  if (instance == "test") {
-    Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_TEST"))
-    Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_TEST"))
-  } else {
-    Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_PROD"))
-    Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_PROD"))
-  }
+#  if (instance == "test") {
+#    Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_TEST"))
+#    Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_TEST"))
+#  } else {
+#    Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_PROD"))
+#    Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_PROD"))
+#  }
+  Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID"))
+  Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_API_KEY"))
 
   parse_signup(username, password, email = email)
   u <- parse_current_user()
@@ -52,18 +54,20 @@ socratic_swirl_instructor <- function(username, password, instance = "prod") {
   # Now:
   #   The keys are all in key.R, and we use setenv/getenv to retrieve the correct keys
   #
-  path="./../config/keys.R"  # read keys and set instructor and password
-  source(path, local=TRUE)
+  #path="./../config/keys.R"  # read keys and set instructor and password
+  #source(path, local=TRUE)
   #
   # By default, it is for production, unless instance = "test"
   #
-  if (instance == "test") {
-    Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_TEST"))
-    Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_TEST"))
-  } else {
-    Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_PROD"))
-    Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_PROD"))
-  }
+#  if (instance == "test") {
+#    Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_TEST"))
+#    Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_TEST"))
+#  } else {
+#    Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_PROD"))
+#    Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_PROD"))
+#  }
+  Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID"))
+  Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_API_KEY"))
 
   parse_login(username, password)
   u <- parse_current_user()
