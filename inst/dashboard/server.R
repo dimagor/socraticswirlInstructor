@@ -6,17 +6,11 @@ library(ggplot2)
 library(rparse)
 library(socraticswirlInstructor)
 
-#
-# To get rid of the following warning message
-#   shiny::renderDataTable is deprecated. Please use DT::renderDataTable instead.
-#   To disable this message, run options(shiny.deprecation.messages=FALSE)
-#   (Last used in version 0.11.1)
-#
-options(shiny.deprecation.messages=FALSE)
-
 # Load the keys for test and production by Sys.setenv
+# source("./../../data/parse_keys.R")
 data(parse_keys)
 # Load the server instance, i.e. test vs production
+# source("./../../data/server_instance.R")
 data(server_instance)
 
 if (server_instance == "test") {
@@ -30,6 +24,14 @@ if (server_instance == "test") {
 parse_login(username, password)
 u <- parse_current_user()
 options(socratic_swirl_instructor = u$username)
+
+#
+# To get rid of the following warning message
+#   shiny::renderDataTable is deprecated. Please use DT::renderDataTable instead.
+#   To disable this message, run options(shiny.deprecation.messages=FALSE)
+#   (Last used in version 0.11.1)
+#
+options(shiny.deprecation.messages=FALSE)
 
 # Static Definitions ----------
 
