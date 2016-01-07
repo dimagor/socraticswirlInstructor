@@ -6,6 +6,6 @@ server_instance = "test"
 #
 # Please fill in the instructor account and password for the above server instance, created by socratic_swirl_signup
 #
-username = "you username"
+username = "your username"
 password = "your password"
 
