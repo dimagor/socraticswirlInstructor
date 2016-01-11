@@ -90,9 +90,14 @@ To view the help text, use the “-h” flag:
 
     uploadStudents.py –h
 
-To create the database schema (the first time) and upload a student roster, type the following:
+To create the database schema (the first time) to upload a student roster, type the following:
 
-    uploadStudents.py –create –filename student_roster.txt –add –n course1 –i test
+    python uploadStudents.py -c -f student_roster.txt -n course1 -i test
+
+Then you could add, or revise precept or delete or list, the students roaster by the following
+
+    python uploadStudents.py -f student_roster.txt -a -n course1 -i test
+    python uploadStudents.py -l -n course1 -i test
 
 This would upload the student list for course1 into the test database.  student_roster.txt should be a tab-separated file.  (You can save a tab-separated file in Excel by saving as a csv file.  Be sure not to save the file with quoted fields.) The expected format is one line for each student, as follows:
 
