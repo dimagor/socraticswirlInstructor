@@ -6,9 +6,9 @@ library(ggplot2)
 library(rparse)
 library(socraticswirlInstructor)
 
-username = "default"
-password = "default"
-server_instance = "test"
+username = "wei"
+password = "asdf123"
+#server_instance = "test"
 
 #
 # Load the keys for test and production by Sys.setenv
