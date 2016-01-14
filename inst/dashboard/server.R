@@ -13,21 +13,23 @@ server_instance = "test"
 #
 # Load the keys for test and production by Sys.setenv
 #
-path="./../../config/keys.R"  # read keys and set instructor and password
-source(path, local=TRUE)
+#path="./../../config/keys.R"  # read keys and set instructor and password
+#source(path, local=TRUE)
 #
 # Load the server instance, i.e. test vs production
 #
-path="./../../config/instance.R"  # read keys and set instructor and password
-source(path, local=TRUE)
+#path="./../../config/instance.R"  # read keys and set instructor and password
+#source(path, local=TRUE)
 
-if (server_instance == "test") {
-  Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_TEST"))
-  Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_TEST"))
-} else {
-  Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_PROD"))
-  Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_PROD"))
-}
+#if (server_instance == "test") {
+#  Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_TEST"))
+#  Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_TEST"))
+#} else {
+#  Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID_PROD"))
+#  Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY_PROD"))
+#}
+Sys.setenv(PARSE_APPLICATION_ID = Sys.getenv("PARSE_APPLICATION_ID"))
+Sys.setenv(PARSE_API_KEY = Sys.getenv("PARSE_API_KEY"))
 
 parse_login(username, password)
 u <- parse_current_user()
