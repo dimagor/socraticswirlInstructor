@@ -31,6 +31,8 @@ devtools::install_github(c("rstudio/shinydashboard", "dgrtwo/rparse", "dimagor/s
 
 The student side software is available at [socraticswirl](https://github.com/dimagor/socraticswirl). Students could install it on their personal computers.
 
+Please note that SocraticswirlInstructor may not works with certain version of dplyr. Thus, we specify dplyr version 0.4.3 in the DESCRIPTION file.
+
 ##### Create parse.com applications
 
 Register an account at parse.com for each group that will be independently using Socraticswirl.  Using that account, create two parse.com applications for each class, one for test and the other for production. 
