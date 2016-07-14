@@ -866,10 +866,16 @@ output$selectCourse <- renderUI({
     all_answers <- studentResponses()
     if (!is.null(all_answers)) {
       all_answers$updatedAt <- all_answers$updatedAt - 14400
+      if (!is.null(input$exerciseID2)) {
 	    all_answers %>%
       filter(exercise == input$exerciseID2) %>%
 	    arrange(updatedAt) %>%
 	    select(Time = updatedAt, Student= studentName, Lesson = lesson,  Command = command, Correct = isCorrect)
+      } else {
+        all_answers %>%
+        arrange(updatedAt) %>%
+        select(Time = updatedAt, Student= studentName, Lesson = lesson,  Command = command, Correct = isCorrect)
+      }
 	  } else {
       NULL
 	  }
