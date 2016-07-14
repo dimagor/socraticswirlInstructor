@@ -11,7 +11,7 @@ Description: Instructor side of the Socratic Swirl application, including a dash
 Depends: R (>= 3.1.0)
 Imports: rparse,
   shiny,
-  dplyr (== 0.4.3),
+  dplyr,
   tidyr,
   yaml,
   shinydashboard
